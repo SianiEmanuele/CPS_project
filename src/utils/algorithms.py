@@ -8,7 +8,7 @@ def ISTA(x_0, C, tau, lam, y):
     l_2_norm = 1
     gamma = tau * lam
     num_iterations=0
-
+    # TODO: Remove
     print("C SHAPE: ", C.shape)
     print("y SHAPE: ", y.shape)
     print("x_0 SHAPE: ", x_0.shape)
