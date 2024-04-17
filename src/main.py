@@ -33,50 +33,99 @@ def ISTA_20_runs( p, q, C, tau, lam, x_sparsity):
             correct_estimations += 1
     return correct_estimations, num_iterations
 
-def ISTA_20_runs_with_attacks( p, q, C, tau, lam, eta, x_sparsity, a_sparsity, attack_type):
-    #parameters definition with suggested settings
-    q=q
-    p=p
-    i=0 #counter
+# def ISTA_20_runs_with_attacks( p, q, C, tau, lam, eta, x_sparsity, a_sparsity, attack_type):
+#     #parameters definition with suggested settings
+#     q=q
+#     p=p
+#     i=0 #counter
 
-    x_tilda_supports = []
-    x_estimated_supports = []
-    a_supports = []
+#     x_tilda_supports = []
+#     x_estimated_supports = []
+#     a_supports = []
+#     num_iterations = []
+#     estimation_accuracy = []
+
+#     #running the simulation 20 times
+#     while(i < 20):        
+#         # generating x_tilda with standard normal distribution
+#         x_tilda = np.random.rand(p)
+
+#         x_tilda_supports.append (np.where(x_tilda != 0)[0])
+        
+#         a = np.zeros(q)
+#         a[np.random.choice(p, a_sparsity, replace=False)] = np.random.choice([-1, 1], 2) * np.random.uniform(1, 2)
+#         print(a)
+#         a_supports.append (np.where(a != 0)[0])
+
+#         eta = eta
+
+#         if(attack_type == "UNAWARE"):
+#             y = np.dot(C, x_tilda) + eta + a
+#         elif (attack_type == "AWARE"):
+#             y = np.dot(C, x_tilda) + eta
+#             for i in a_supports[-1]:
+#                 y[i] = y[i] / 2
+#         x_estimated, x_estimated_supp, iterations = ISTA(np.zeros(p),C,tau,lam,y)
+#         x_estimated_supports.append(x_estimated_supp)
+#         num_iterations.append(iterations)
+
+#         i+=1
+#     correct_estimations = 0
+
+#     for j in range(20):
+#         if np.array_equal(x_tilda_supports[j], x_estimated_supports[j]):
+#             correct_estimations += 1
+#     estimation_accuracy.append((np.linalg.norm(x_tilda - x_estimated, ord=2)**2))
+#     return correct_estimations, num_iterations, np.mean(estimation_accuracy)
+
+def ISTA_20_runs_with_attacks(n, q, C, tau, lam, eta, x_sparsity, a_sparsity, attack_type):
+    correct_estimations = 0
     num_iterations = []
     estimation_accuracy = []
 
-    #running the simulation 20 times
-    while(i < 20):        
-        # generating x_tilda with standard normal distribution
-        x_tilda = np.random.rand(p)
+    for _ in range(20):
+        # Generate xe with standard normal distribution
+        x_tilda = np.random.randn(n)
 
-        x_tilda_supports.append (np.where(x_tilda != 0)[0])
-        
+        # Generate the attack vector a
         a = np.zeros(q)
-        a[np.random.choice(p, a_sparsity, replace=False)] = np.random.choice([-1, 1], 2) * np.random.uniform(1, 2)
-        print(a)
-        a_supports.append (np.where(a != 0)[0])
+        attack_indices = np.random.choice(q, a_sparsity, replace=False)
+        a[attack_indices] = np.random.choice([-2, -1, 1, 2], a_sparsity)
+        #print("vector a:", a)
 
-        eta = eta
-
-        if(attack_type == "UNAWARE"):
+        # Generate the measurements y
+        if attack_type == "UNAWARE":
             y = np.dot(C, x_tilda) + eta + a
-        elif (attack_type == "AWARE"):
+        elif attack_type == "AWARE":
             y = np.dot(C, x_tilda) + eta
-            for i in a_supports[-1]:
-                y[i] = y[i] / 2
-        x_estimated, x_estimated_supp, iterations = ISTA(np.zeros(p),C,tau,lam,y)
-        x_estimated_supports.append(x_estimated_supp)
+            y[attack_indices] += 0.5 * y[attack_indices]
+
+        # Estimate xe using the weighted ISTA
+        lam_weights = np.concatenate((np.zeros(n), np.ones(q)))
+        #print("lam :", lam_weights * lam)
+        G = np.hstack((C, np.eye(q)))
+        w = np.zeros(n+q)
+        w_estimated, w_estimated_supp, iterations = ISTA(w, G, tau, lam * lam_weights, y)
+
+        # Extract the estimated x
+        x_estimated = w_estimated[:n]
+
+        # Retrieve the estimated attack vector
+        a_estimated = w_estimated[n:]
+
+        # Calculate the estimation accuracy
+        estimation_accuracy.append(np.linalg.norm(x_tilda - x_estimated)**2)
+
+        # Check if the attack was correctly detected
+        if np.array_equal(np.where(a != 0)[0], np.where(a_estimated != 0)[0]):
+            correct_estimations += 1
+
         num_iterations.append(iterations)
 
-        i+=1
-    correct_estimations = 0
+    attack_detection_rate = correct_estimations / 20
+    mean_estimation_accuracy = np.mean(estimation_accuracy)
 
-    for j in range(20):
-        if np.array_equal(x_tilda_supports[j], x_estimated_supports[j]):
-            correct_estimations += 1
-    estimation_accuracy.append((np.linalg.norm(x_tilda - x_estimated, ord=2)**2))
-    return correct_estimations, num_iterations, np.mean(estimation_accuracy)
+    return attack_detection_rate, num_iterations, mean_estimation_accuracy
 
 #Exercise 1
 def exercise_1():
@@ -187,9 +236,9 @@ def exercise_2():
     #calculate tau as a vector with q zeroes and p ones
     C_l_2_norm = np.linalg.norm(C, ord=2)
     tau = 1 / (C_l_2_norm**2) - 10**(-8)
-    lam = np.zeros(q+p)
+    lam = 2 * 10**(-3) / tau
 
-    print(tau*lam)
+    print(lam)
 
     eta = np.zeros(q)
 
@@ -197,6 +246,6 @@ def exercise_2():
 
     print("             QUESTION 2\n- Estimation accuracy: is the estimation of x_tilda accurate?")
     correct_estimations, num_iterations, estimation_accuracy  = ISTA_20_runs_with_attacks(p, q, C, tau, lam,eta,sparsity,2, "UNAWARE")
-    print(" UNAWARE | The mean estimation accuracy is: ", correct_estimations, " calculated over 20 runs")
+    print(" UNAWARE | The rate of attack detection is: ", correct_estimations, " calculated over 20 run\n The mean estimation accuracy is: ", estimation_accuracy, "\n")
 
 exercise_2()
