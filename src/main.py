@@ -7,7 +7,6 @@ def ISTA_runs( runs, p, q, C, tau, lam, x_sparsity):
     #parameters definition with suggested settings
     q=q
     p=p
-    i=0 #counter
 
     x_tilda_supports = []
     x_estimated_supports = []
@@ -34,14 +33,14 @@ def ISTA_runs( runs, p, q, C, tau, lam, x_sparsity):
     return correct_estimations, num_iterations
 
 
-def ISTA_runs_with_attacks(n, q, C, tau, lam, x_sparsity, a_sparsity, attack_type, noisy):
+def ISTA_runs_with_attacks(runs, n, q, C, tau, lam, x_sparsity, a_sparsity, attack_type, noisy):
     correct_estimations = 0
     num_iterations = []
     estimation_accuracy = []
 
-    for _ in range(20):
+    for _ in range(runs):
         # Generate x_tilda with standard uniform distribution        
-        x_tilda = np.random.rand(n)
+        x_tilda = np.random.randn(n)
 
         # Generate the attack vector a
         a = np.zeros(q)
@@ -82,10 +81,9 @@ def ISTA_runs_with_attacks(n, q, C, tau, lam, x_sparsity, a_sparsity, attack_typ
 
         num_iterations.append(iterations)
 
-    attack_detection_rate = correct_estimations / 20
-    mean_estimation_accuracy = np.mean(estimation_accuracy)
+    attack_detection_rate = correct_estimations / runs
 
-    return attack_detection_rate, num_iterations, mean_estimation_accuracy
+    return attack_detection_rate, num_iterations, estimation_accuracy
 
 #task 1
 def task_1():
@@ -107,57 +105,13 @@ def task_1():
     print("The support of x_tilda is correctly estimated in ", correct_estimations, " out of", runs ," runs" , 
           "\nMin iterations = ", min(num_iterations), " || Max iterations = ", max(num_iterations), " || Mean Iterations = ", np.mean(num_iterations), "\n")
 
-    ##################################### QUESTION 2 ##############################################################
-    q_list = range(10, 51)
-    correct_estimations_percentage = []
-    max_iterations = []
-    min_iterations = []
-    mean_iterations = []
-
-    print("             QUESTION 2\n- Can we obtain 100% of success in the support recovery by increasing q?\n")
-    for q in q_list:
-        C = np.random.randn(q, p)
-        C_l_2_norm = np.linalg.norm(C, ord=2)
-        tau = 1 / (C_l_2_norm**2) - 10**(-8)
-        lam = 1 / (100*tau)
-        correct_estimations, num_iterations = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
-        correct_estimations_percentage.append(correct_estimations*100/runs)
-        max_iterations.append(np.max(num_iterations))
-        min_iterations.append(np.min(num_iterations))
-        mean_iterations.append(np.mean(num_iterations))
-        # print("q = ", q, "|| The support of x_tilda is correctly estimated in ", correct_estimations, " out of ", runs, " runs" , "\n")
-    
-    #plotting correct estimations percentage
-    plt.plot(q_list, correct_estimations_percentage)
-    plt.xlabel("q")
-    plt.ylabel("Correct estimations percentage")
-    plt.title("Percentage of correct estimations in function of q")
-    plt.show()
-
-    #plotting min, max and mean iterations in 3 different lines
-    fig, axs = plt.subplots(3)
-    fig.suptitle('Iterations in function of q')
-    axs[0].plot(q_list, min_iterations)
-    axs[0].set_title('Min iterations')
-    axs[1].plot(q_list, max_iterations)
-    axs[1].set_title('Max iterations')
-    axs[2].plot(q_list, mean_iterations)
-    axs[2].set_title('Mean iterations')
-    plt.show()
-
-
-    # #simulation
-    # correct_estimations, num_iterations = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
-    # print("q = ", q, "|| The support of x_tilda is correctly estimated in ", correct_estimations, " out of ", runs, " runs" , "\n")
-
     ##################################### QUESTION 4 ##############################################################
 
-    print("             QUESTION 4\n q = 25 | Try different values for τ , by keeping τλ constant\n")
-    
-
+    print("             QUESTION 4\n q = 10 | Try different values for τ , by keeping τλ constant\n")
+    q = 10
     tau_list = [] 
-    for i in range (1, 11):
-        tau_list.append(1 / (C_l_2_norm**2) - 10**(-10) - i * 10**(-12))
+    for i in range (0, 10):
+        tau_list.append(1 / (C_l_2_norm**2) - 10**(-8) - i * 10**(-3))
     correct_estimations_percentage = []
     max_iterations = []
     min_iterations = []
@@ -178,12 +132,12 @@ def task_1():
     plt.plot(tau_list, correct_estimations_percentage)
     plt.xlabel("tau")
     plt.ylabel("Correct estimations percentage")
-    plt.title("Percentage of correct estimations in function of tau")
+    plt.title("q = 10 | Percentage of correct estimations in function of tau")
     plt.show()
 
     #plotting min, max and mean iterations in funcrtion of tau
     fig, axs = plt.subplots(3)
-    fig.suptitle('Iterations in function of tau')
+    fig.suptitle('q = 10 | Iterations in function of tau')
     axs[0].plot(tau_list, min_iterations)
     axs[0].set_title('Min iterations')
     axs[1].plot(tau_list, max_iterations)
@@ -192,52 +146,149 @@ def task_1():
     axs[2].set_title('Mean iterations')
     plt.show()
 
+    # In order to highlight the fact that the value of q is the determining factor in the correct estimation of the support, we will conduct two analysis.
+    #     1. Varying tau keeping q equal to 10
+    #     2. Varying tau keeping q equal to 20 (order of x)
+    # For the comparison to be fair we used the same tau with both q==10 and q==20
+
+    print("             QUESTION 4\nTry different values for τ , by keeping τλ constant\n")
+
+    q = 10
+    tau_list = [] 
+    for i in range (0, 10):
+        tau_list.append(1 / (C_l_2_norm**2) - 10**(-8) - i * 10**(-3))
+    correct_estimations_percentage_q_10 = []
+    max_iterations_q_10 = []
+    min_iterations_q_10 = []
+    mean_iterations_q_10 = []
+
+    for tau in tau_list:
+        C = np.random.randn(q, p)
+        C_l_2_norm = np.linalg.norm(C, ord=2)
+        lam = 1 / (100*tau)
+        correct_estimations, num_iterations = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
+        correct_estimations_percentage_q_10.append(correct_estimations*100/runs)
+        max_iterations_q_10.append(np.max(num_iterations))
+        min_iterations_q_10.append(np.min(num_iterations))
+        mean_iterations_q_10.append(np.mean(num_iterations))
+
+    q = 20
+    correct_estimations_percentage_q_20 = []
+    max_iterations_q_20 = []
+    min_iterations_q_20 = []
+    mean_iterations_q_20 = []
+
+    for tau in tau_list:
+        C = np.random.randn(q, p)
+        C_l_2_norm = np.linalg.norm(C, ord=2)
+        lam = 1 / (100*tau)
+        correct_estimations, num_iterations = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
+        correct_estimations_percentage_q_20.append(correct_estimations*100/runs)
+        max_iterations_q_20.append(np.max(num_iterations))
+        min_iterations_q_20.append(np.min(num_iterations))
+        mean_iterations_q_20.append(np.mean(num_iterations))
+
+    #plotting correct estimations percentage with both q=10 and q=20
+    plt.plot(tau_list, correct_estimations_percentage_q_10, label="q=10", color='r')
+    plt.plot(tau_list, correct_estimations_percentage_q_20, label="q=20", color='b')
+    plt.xlabel("tau")
+    plt.ylabel("Correct estimations percentage")
+    plt.title("q = 20 | Percentage of correct estimations in function of tau")
+    plt.legend()
+    plt.show()
+
+    #plotting min, max and mean iterations in funcrtion of tau with q=10 and q=20
+    fig, axs = plt.subplots(3, figsize=(10, 15))
+    fig.suptitle('Iterations in function of tau')
+    axs[0].plot(tau_list, min_iterations_q_10, label="q=10", color='r')
+    axs[0].plot(tau_list, min_iterations_q_20, label="q=20", color='b')
+    axs[0].set_title('Min iterations')
+    axs[0].legend()
+    axs[1].plot(tau_list, max_iterations_q_10, label="q=10", color='r')
+    axs[1].plot(tau_list, max_iterations_q_20, label="q=20", color='b')
+    axs[1].legend()
+    axs[1].set_title('Max iterations')
+    axs[2].plot(tau_list, mean_iterations_q_10, label="q=10", color='r')
+    axs[2].plot(tau_list, mean_iterations_q_20, label="q=20", color='b')
+    axs[2].set_title('Mean iterations')
+    axs[2].legend()
+    plt.show()
+
 
     ##################################### QUESTION 5 ##############################################################
-    print("             QUESTION 5\nTry different values for λ , by keeping τ constant\n")
-    
+    print("             QUESTION 5\nq=10 | Try different values for λ , by keeping τ constant\n")
+
+    q = 10
     tau = 1 / (C_l_2_norm**2) - 10**(-8)
     lam_list = []
-    for i in range(1, 11):
+    for i in range(0, 10):
         lam_list.append(1 / (100*tau) - i * 10**(-4))
-    correct_estimations_percentage = []
-    max_iterations = []
-    min_iterations = []
-    mean_iterations = []
+    print(lam_list)
+
+    correct_estimations_percentage_q_10 = []
+    max_iterations_q_10 = []
+    min_iterations_q_10 = []
+    mean_iterations_q_10 = []
 
     for lam in lam_list:
         C = np.random.randn(q, p)
         C_l_2_norm = np.linalg.norm(C, ord=2)
         correct_estimations, num_iterations = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
-        correct_estimations_percentage.append(correct_estimations*100/runs)
-        max_iterations.append(np.max(num_iterations))
-        min_iterations.append(np.min(num_iterations))
-        mean_iterations.append(np.mean(num_iterations))
+        correct_estimations_percentage_q_10.append(correct_estimations*100/runs)
+        max_iterations_q_10.append(np.max(num_iterations))
+        min_iterations_q_10.append(np.min(num_iterations))
+        mean_iterations_q_10.append(np.mean(num_iterations))
         print("lam = ", lam, "|| The support of x_tilda is correctly estimated in ", correct_estimations, " out of ", runs, " runs" , "\n")
     
-    #plotting correct estimations percentage
-    plt.plot(lam_list, correct_estimations_percentage)
-    plt.xlabel("lam")
+    q = 20
+    correct_estimations_percentage_q_20 = []
+    max_iterations_q_20 = []
+    min_iterations_q_20 = []
+    mean_iterations_q_20 = []
+
+    for lam in lam_list:
+        C = np.random.randn(q, p)
+        C_l_2_norm = np.linalg.norm(C, ord=2)
+        correct_estimations, num_iterations = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
+        correct_estimations_percentage_q_20.append(correct_estimations*100/runs)
+        max_iterations_q_20.append(np.max(num_iterations))
+        min_iterations_q_20.append(np.min(num_iterations))
+        mean_iterations_q_20.append(np.mean(num_iterations))
+    
+
+    #plotting correct estimations percentage with both q=10 and q=20
+    plt.plot(lam_list, correct_estimations_percentage_q_10, label="q=10", color='r')
+    plt.plot(lam_list, correct_estimations_percentage_q_20, label="q=20", color='b')
+    plt.xlabel("lambda")
     plt.ylabel("Correct estimations percentage")
-    plt.title("Percentage of correct estimations in function of lam")
+    plt.title("Percentage of correct estimations in function of lambda")
+    plt.legend()
     plt.show()
 
-    #plotting min, max and mean iterations in funcrtion of tau
-    fig, axs = plt.subplots(3)
+    #plotting min, max and mean iterations in funcrtion of tau with q=10 and q=20
+    fig, axs = plt.subplots(3, figsize=(10, 10))
     fig.suptitle('Iterations in function of lambda')
-    axs[0].plot(lam_list, min_iterations)
+    axs[0].plot(lam_list, min_iterations_q_10, label="q=10", color='r')
+    axs[0].plot(lam_list, min_iterations_q_20, label="q=20", color='b')
     axs[0].set_title('Min iterations')
-    axs[1].plot(lam_list, max_iterations)
+    axs[0].legend()
+    axs[1].plot(lam_list, max_iterations_q_10, label="q=10", color='r')
+    axs[1].plot(lam_list, max_iterations_q_20, label="q=20", color='b')
+    axs[1].legend()
     axs[1].set_title('Max iterations')
-    axs[2].plot(lam_list, mean_iterations)
+    axs[2].plot(lam_list, mean_iterations_q_10, label="q=10", color='r')
+    axs[2].plot(lam_list, mean_iterations_q_20, label="q=20", color='b')
     axs[2].set_title('Mean iterations')
+    axs[2].legend()
     plt.show()
+
 
 
     
 
 # task_2
 def task_2():
+    runs=1000
     q=20
     p=10
     x_sparsity = p
@@ -248,20 +299,48 @@ def task_2():
     tau = 1 / (C_l_2_norm**2) - 10**(-8)
     lam = 2 * 10**(-3) / tau
 
-    print("\nSECOND EXERCISE WITH SUGGESTED PARAMETERS (q=10, p=20)\n")
+    attack_detection_rate, num_iterations, estimation_accuracy  = ISTA_runs_with_attacks(runs, p, q, C, tau, lam,x_sparsity,a_sparsity, "UNAWARE", noisy=False)
 
-    attack_detection_rate, num_iterations, estimation_accuracy  = ISTA_runs_with_attacks(p, q, C, tau, lam,x_sparsity,a_sparsity, "UNAWARE", noisy=False)
-    print("| UNAWARE - CLEAN | \n1. The rate of attack detection is: ", attack_detection_rate, " calculated over 20 run\n2. The mean estimation accuracy is: ", estimation_accuracy, "\n")
+    plt.scatter(range(runs), estimation_accuracy, s=1, c='blue', marker='o')
+    plt.xlabel("Number of runs")
+    plt.ylabel("Estimation accuracy")
+    plt.title("UNAWARE - CLEAN | Estimation accuracy in function of the number of runs")
+    plt.show()
 
-    attack_detection_rate, num_iterations, estimation_accuracy  = ISTA_runs_with_attacks(p, q, C, tau, lam,x_sparsity,a_sparsity, "AWARE", noisy=False)
-    print("| AWARE - CLEAN | \n1. The rate of attack detection is: ", attack_detection_rate, " calculated over 20 run\n2.  The mean estimation accuracy is: ", estimation_accuracy, "\n")
+    print("Attack detection rate: ", attack_detection_rate)
 
-    attack_detection_rate, num_iterations, estimation_accuracy  = ISTA_runs_with_attacks(p, q, C, tau, lam,x_sparsity,a_sparsity, "UNAWARE", noisy=True)
-    print("| UNAWARE - NOISY | \n1. The rate of attack detection is: ", attack_detection_rate, " calculated over 20 run\n2. The mean estimation accuracy is: ", estimation_accuracy, "\n")
+    attack_detection_rate, num_iterations, estimation_accuracy  = ISTA_runs_with_attacks(runs, p, q, C, tau, lam,x_sparsity,a_sparsity, "UNAWARE", noisy=True)
 
-    attack_detection_rate, num_iterations, estimation_accuracy  = ISTA_runs_with_attacks(p, q, C, tau, lam,x_sparsity,a_sparsity, "AWARE", noisy=True)
-    print("| AWARE - CLEAN | \n1. The rate of attack detection is: ", attack_detection_rate, " calculated over 20 run\n2. The mean estimation accuracy is: ", estimation_accuracy, "\n")
+    #plot the estimation accuracy in function of the number of runs
+    plt.scatter(range(runs), estimation_accuracy, s=1, c='blue', marker='o')
+    plt.xlabel("Number of runs")
+    plt.ylabel("Estimation accuracy")
+    plt.title("UNAWARE - NOISY | Estimation accuracy in function of the number of runs")
+    plt.show()
 
+    print("Attack detection rate: ", attack_detection_rate)
 
-task_1()
-#task_2()
+    attack_detection_rate, num_iterations, estimation_accuracy  = ISTA_runs_with_attacks(runs, p, q, C, tau, lam,x_sparsity,a_sparsity, "AWARE", noisy=False)
+
+    #plot the estimation accuracy in function of the number of runs
+    plt.scatter(range(runs), estimation_accuracy, s=1, c='blue', marker='o')
+    plt.xlabel("Number of runs")
+    plt.ylabel("Estimation accuracy")
+    plt.title("AWARE - CLEAN | Estimation accuracy in function of the number of runs")
+    plt.show()
+
+    print("Attack detection rate: ", attack_detection_rate)
+
+    attack_detection_rate, num_iterations, estimation_accuracy  = ISTA_runs_with_attacks(runs, p, q, C, tau, lam,x_sparsity,a_sparsity, "AWARE", noisy=True)
+
+    #plot the estimation accuracy in function of the number of runs
+    plt.scatter(range(runs), estimation_accuracy, s=1, c='blue', marker='o')
+    plt.xlabel("Number of runs")
+    plt.ylabel("Estimation accuracy")
+    plt.title("AWARE - NOISY | Estimation accuracy in function of the number of runs")
+    plt.show()
+    
+    print("Attack detection rate: ", attack_detection_rate)
+
+#task_1()
+task_2()
