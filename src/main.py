@@ -2,6 +2,9 @@ import os as os
 import numpy as np
 import matplotlib.pyplot as plt
 from utils.algorithms import *
+import scipy.io as sio
+from scipy import stats
+
         
 def ISTA_runs( runs, p, q, C, tau, lam, x_sparsity):
     #parameters definition with suggested settings
@@ -84,6 +87,20 @@ def ISTA_runs_with_attacks(runs, n, q, C, tau, lam, x_sparsity, a_sparsity, atta
     attack_detection_rate = correct_estimations / runs
 
     return attack_detection_rate, num_iterations, estimation_accuracy
+
+def Localization_with_attacks(n, q, G, tau, lam, y):
+
+    # Estimate x_tilda using ISTA
+    lam_weights = np.concatenate((np.full(n, 10), np.full(q,20)))
+    w = np.zeros(n+q)
+    w_estimated, w_estimated_supp, iterations = ISTA(w, G, tau, lam * lam_weights, y)
+    
+    print("\nNon-zero components of W: ")
+    for elem in w_estimated_supp:
+        print(w_estimated[elem])
+
+    print()
+    return w_estimated_supp, iterations
 
 #task 1
 def task_1():
@@ -342,5 +359,42 @@ def task_2():
     
     print("Attack detection rate: ", attack_detection_rate)
 
-#task_1()
-task_2()
+def task_3():
+
+    #original matrices
+    mat = sio.loadmat(r'src/utils/localization.mat')
+    #normalized G matrix
+    mat2 = sio.loadmat(r'src/utils/localization_with_G_normalized.mat')
+
+    A = mat['A']
+    y = np.squeeze(mat['y'])
+    D = mat['D']
+    n = D.shape[1]
+    q = D.shape[0]
+    # print(A.shape , y.shape, D.shape)
+
+    G = np.hstack((D, np.eye(q)))
+
+    #G = stats.zscore(G, axis=0)
+    #print (G.shape)
+    G_normalized = mat2['G']
+    print(G_normalized.shape)
+
+    # mean_G = np.mean(G, axis=0)
+    # std_G = np.std(G, axis=0)
+
+    # G = (G - mean_G) / std_G
+
+
+    tau = 1 / (np.linalg.norm(G_normalized, ord=2)**2) - 10**(-8)
+    lam = 1
+    
+    #print(n,q)
+
+    w_estimated_supp, iterations = Localization_with_attacks(n, q, G_normalized, tau, lam, y)
+
+    print("Estimated support: ", w_estimated_supp)
+
+
+
+task_3()
