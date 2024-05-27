@@ -351,13 +351,12 @@ def task_2():
     plt.ylabel("Estimation accuracy")
     plt.title("AWARE - NOISY | Estimation accuracy in function of the number of runs")
     plt.show()
-    
     print("Attack detection rate: ", attack_detection_rate)
 
 def task_3():
 
     #original matrices
-    mat = sio.loadmat(r'src/utils/localization.mat')
+    mat = sio.loadmat(r'PT1-Modeling/src/utils/localization.mat')
 
     A = mat['A']
     y = np.squeeze(mat['y'])
@@ -415,4 +414,7 @@ def task_3():
 
 
 
-task_3()
+if __name__ == "__main__":
+    #task_1()
+    #task_2()
+    task_3()
