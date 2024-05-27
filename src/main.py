@@ -1,7 +1,7 @@
 import os as os
 import numpy as np
 import matplotlib.pyplot as plt
-from utils.algorithms import *
+from utils import ISTA, IST
 import scipy.io as sio
 from scipy import stats
 
@@ -94,13 +94,8 @@ def Localization_with_attacks(n, q, G, tau, lam, y):
     lam_weights = np.concatenate((np.full(n, 10), np.full(q,20)))
     w = np.zeros(n+q)
     w_estimated, w_estimated_supp, iterations = ISTA(w, G, tau, lam * lam_weights, y)
-    
-    print("\nNon-zero components of W: ")
-    for elem in w_estimated_supp:
-        print(w_estimated[elem])
 
-    print()
-    return w_estimated_supp, iterations
+    return w_estimated, w_estimated_supp, iterations
 
 #task 1
 def task_1():
@@ -363,37 +358,60 @@ def task_3():
 
     #original matrices
     mat = sio.loadmat(r'src/utils/localization.mat')
-    #normalized G matrix
-    mat2 = sio.loadmat(r'src/utils/localization_with_G_normalized.mat')
 
     A = mat['A']
     y = np.squeeze(mat['y'])
     D = mat['D']
     n = D.shape[1]
     q = D.shape[0]
-    # print(A.shape , y.shape, D.shape)
 
     G = np.hstack((D, np.eye(q)))
+    #normalize G
+    G = stats.zscore(G, axis=0)
 
-    #G = stats.zscore(G, axis=0)
-    #print (G.shape)
-    G_normalized = mat2['G']
-    print(G_normalized.shape)
-
-    # mean_G = np.mean(G, axis=0)
-    # std_G = np.std(G, axis=0)
-
-    # G = (G - mean_G) / std_G
-
-
-    tau = 1 / (np.linalg.norm(G_normalized, ord=2)**2) - 10**(-8)
+    tau = 1 / (np.linalg.norm(G, ord=2)**2) - 10**(-8)
     lam = 1
     
-    #print(n,q)
+    w_estimated, w_estimated_supp, iterations = Localization_with_attacks(n, q, G, tau, lam, y)
 
-    w_estimated_supp, iterations = Localization_with_attacks(n, q, G_normalized, tau, lam, y)
+    # Extract the estimated targets' location by taking the 3 greatest values of the first n elements of w_estimated
+    estimated_targets_location = np.argsort(w_estimated[:n])[-3:]
 
-    print("Estimated support: ", w_estimated_supp)
+    # Extract the estimated attacked vectors from the support of the last q eleemnts of w_estimated
+    estimated_attacked_sensors = np.where(w_estimated[n:] != 0)[0]
+    
+    print("Estimated targets location: ", estimated_targets_location)
+    print("Estimated attacked sensors: ", estimated_attacked_sensors)
+
+    H = 10  # altezza della griglia (# celle)
+    L = 10  # lunghezza della griglia (# celle)
+    W = 100  # larghezza di una cella quadrata (cm)
+
+    room_grid = np.zeros((2, n))
+
+    for i in range(n):
+        room_grid[0, i] = W//2 + (i % L) * W
+        room_grid[1, i] = W//2 + (i // L) * W
+
+    # Visualizzazione dei target statici
+    plt.figure()
+    plt.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 's', markersize=9, 
+            markeredgecolor=np.array([40, 208, 220])/255, 
+            markerfacecolor=np.array([40, 208, 220])/255)
+    plt.grid(True)
+    plt.legend(['Targets'], loc='best')
+    plt.plot(room_grid[0, estimated_attacked_sensors], room_grid[1, estimated_attacked_sensors], 's', markersize=9, 
+            markeredgecolor=np.array([255, 0, 0])/255, 
+            markerfacecolor=np.array([255, 0, 0])/255)
+
+    plt.xticks(np.arange(100, 1001, 100))
+    plt.yticks(np.arange(100, 1001, 100))
+    plt.xlabel('(cm)')
+    plt.ylabel('(cm)')
+    plt.axis([0, 1000, 0, 1000])
+    plt.gca().set_aspect('equal', adjustable='box')
+
+    plt.show()
 
 
 
