@@ -117,9 +117,6 @@ def observer(n, q, A, G, tau, lam, y, K):
         x_hat.append(np.dot(A,z_hat_plus[:n]))
         a_hat.append(z_hat_plus[n:])
         z_hat.append(np.hstack((x_hat[k+1], a_hat[k+1])))
-    print("X: ", x_hat[-1])
-    print("A: ", a_hat[-1])
-
     return x_hat, a_hat
 
 #task 1
@@ -470,6 +467,7 @@ def task_3():
     plt.show()
 
 def task_4():
+    np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
     cwd = os.getcwd()
     #original matrices
     mat = sio.loadmat(cwd + r'/src/utils/tracking_moving_targets.mat')
@@ -479,7 +477,6 @@ def task_4():
     n = D.shape[1]
     q = D.shape[0]
     K = y.shape[1]
-    print(K)
 
     G = np.hstack((D, np.eye(q)))
     #normalize G
@@ -487,7 +484,9 @@ def task_4():
 
     tau = 1 / (np.linalg.norm(G, ord=2)**2) - 10**(-8)
     lam = 1
-    observer(n, q, A, G, tau, lam, y, K)
+    x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
+
+
     # # Extract the estimated targets' location by taking the 3 greatest values of the first n elements of w_estimated
     # estimated_targets_location = np.argsort(w_estimated[:n])[-3:]
 
@@ -502,30 +501,55 @@ def task_4():
     W = 100  # Cell's width (cm)
 
     room_grid = np.zeros((2, n))
-
     for i in range(n):
         room_grid[0, i] = W//2 + (i % L) * W
         room_grid[1, i] = W//2 + (i // L) * W
+    
+    fig, ax = plt.subplots()
+    true_location = []
+    true_location.append([21,34,85])
+    # append other 49 true locations by subtracting 1 from each element
+    for i in range(49):
+        true_location.append([x-1 for x in true_location[i]])
 
-#     # Plots
-#     plt.figure()
-#     plt.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 's', markersize=9, 
-#             markeredgecolor=np.array([40, 208, 220])/255, 
-#             markerfacecolor=np.array([40, 208, 220])/255)
-#     plt.grid(True)
-#     plt.legend(['Targets'], loc='best')
-# #     plt.plot(room_grid[0, estimated_attacked_sensors], room_grid[1, estimated_attacked_sensors], 's', markersize=9, 
-# #             markeredgecolor=np.array([255, 0, 0])/255, 
-# #             markerfacecolor=np.array([255, 0, 0])/255)
+    
 
-#     plt.xticks(np.arange(100, 1001, 100))
-#     plt.yticks(np.arange(100, 1001, 100))
-#     plt.xlabel('(cm)')
-#     plt.ylabel('(cm)')
-#     plt.axis([0, 1000, 0, 1000])
-#     plt.gca().set_aspect('equal', adjustable='box')
 
-#     plt.show()
+    for x,true_x,a in zip(x_hat,true_location, a_hat):
+        estimated_targets_location = np.argsort(x)[-3:]
+        estimated_attacked_sensors = np.where(a != 0)[0]
+        print("Estimated attacked sensors: ", estimated_attacked_sensors)
+
+        # Pulisci il grafico precedente
+        ax.clear()
+
+        # Plotta i nuovi dati
+        ax.plot(room_grid[0, true_x], room_grid[1, true_x], 's', markersize=9, 
+                markeredgecolor=np.array([40, 208, 220])/255, 
+                markerfacecolor=np.array([40, 208, 220])/255)
+        # update true location by subtracting 1 from each element as red circles
+        ax.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 'x', markersize=9, 
+                markeredgecolor=np.array([255, 0, 0])/255, 
+                markerfacecolor=np.array([255, 255, 255])/255)
+
+
+        ax.grid(True)
+        ax.legend(['True Targets', 'Estimated Targets'], loc='best')
+
+        ax.set_xticks(np.arange(100, 1001, 100))
+        ax.set_yticks(np.arange(100, 1001, 100))
+        ax.set_xlabel('(cm)')
+        ax.set_ylabel('(cm)')
+        ax.set_xlim([0, 1000])
+        ax.set_ylim([0, 1000])
+        ax.set_aspect('equal', adjustable='box')
+
+        # Aggiorna la figura
+        plt.pause(0.5)
+        
+
+    # Mostra il grafico finale
+    plt.show()
     return 
 
 if __name__ == "__main__":
