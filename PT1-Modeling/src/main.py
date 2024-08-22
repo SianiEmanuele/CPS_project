@@ -444,9 +444,13 @@ def task_3():
 
     plt.show()
 
+    def task_5():
+        return 
+
 
 
 if __name__ == "__main__":
+    pass
     #task_1()
     #task_2()
-    task_3()
+    # task_3()
