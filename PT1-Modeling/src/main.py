@@ -517,7 +517,8 @@ def task_4():
 
     for x,true_x,a in zip(x_hat,true_location, a_hat):
         estimated_targets_location = np.argsort(x)[-3:]
-        estimated_attacked_sensors = np.where(a != 0)[0]
+        estimated_attacked_sensors = np.argsort(a)[-2:]
+        # estimated_attacked_sensors = np.where(a != 0)[0]
         print("Estimated attacked sensors: ", estimated_attacked_sensors)
 
         # Pulisci il grafico precedente
