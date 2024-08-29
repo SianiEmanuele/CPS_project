@@ -471,7 +471,7 @@ def task_4():
     cwd = os.getcwd()
     #original matrices
     # mat = sio.loadmat(cwd + r'/CPS_project/PT1-Modeling/src/utils/tracking_moving_targets.mat')
-    mat = sio.loadmat(cwd + r'/../utils/tracking_moving_targets.mat')
+    mat = sio.loadmat(cwd + r'/src/utils/tracking_moving_targets.mat')
 
     A = mat['A']
     y = mat['Y']
@@ -570,7 +570,141 @@ def task_4():
     return
 
 ############################################# TASK 4 OPTIONAL ##############################################################################
+def task_4_optional():
+    np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
+    cwd = os.getcwd()
+    #original matrice
+    mat = sio.loadmat(cwd + r'/src/utils/tracking_moving_targets.mat')
+    # mat = sio.loadmat(cwd + r'/CPS_project/PT1-Modeling/src/utils/tracking_moving_targets.mat')
+    A = mat['A']
+    D = mat['D']
+    n = D.shape[1]
+    q = D.shape[0]
+    K = 10000
 
+    H = 10  # Grid's height (# celle)
+    L = 10  # Grid's length (# celle)
+    W = 100  # Cell's width (cm)
+
+    sensor_coords = np.array([
+        [80,  750],[100,  345],[70, 170],[190, 930],[170, 30],[240, 320],[260, 360],[260, 460],[350, 700],[370, 410],
+        [400, 950],[330, 640],[410, 650],[550, 20],[620, 750],[760, 760],[650,  10],[660, 230],[710, 195],[870, 650],
+        [920, 950],[930, 610],[960, 190],[970, 260],[970, 980]
+    ])
+
+    room_grid = np.zeros((2, n))
+    for i in range(n):
+        room_grid[0, i] = W//2 + (i % L) * W
+        room_grid[1, i] = W//2 + (i // L) * W
+    
+    targets_location = [21,34,85]
+    # append other 49 true locations by subtracting 1 from each element
+    x_true = np.zeros((n, K))
+    for loc in targets_location:
+        x_true[loc, 0] = 1
+
+    # for i in range(K):
+    #     x_true[:, i] = np.zeros(n)
+    #     for loc in targets_location:
+    #         x_true[loc, i] = 1
+    #     targets_location = [x-1 for x in targets_location]
+    #     # avoid negative values
+    #     targets_location = [(p if p >= 0 else 100 + p) for p in targets_location]
+    for i in range(K-1):
+        x_true[:,i+1] = np.dot(A, x_true[:,i])
+    # Numero di quadratini della griglia (100)
+    grid_size = 100
+    # Inizializza una lista per contenere i vettori colonna di 100 elementi per ogni istante di tempo
+    result = []
+    # Itera attraverso ogni istante temporale
+    # for i in range(49):
+    #     # Crea un vettore colonna di 100 elementi inizializzato a 0
+    #     vector = np.zeros(grid_size)
+    #     # Ottieni le posizioni dei 3 target al tempo t
+    #     positions = true_location[i]
+    #     # Correggi le posizioni negative, sottraendole da 100
+    #     corrected_positions = [(p if p >= 0 else 100 + p) for p in positions]
+    #     # Imposta a 1 le posizioni nel vettore colonna
+    #     for pos in corrected_positions:
+    #         vector[pos] = 1
+    #     # Aggiungi il vettore colonna alla lista dei risultati
+    #     result.append(vector)
+    # # Converti la lista dei risultati in una matrice numpy
+    # x_true = np.array(result).T  # Trasponi per avere 100 righe e 50 colonne
+    # # Stampa il risultato
+    # # print(x_true)
+    # # print(len(x_true))
+
+    attacked_sensors = [(11, 15), (8,24)]  
+    
+    # Create the vector of measurement corrupted with attacks
+    y = np.zeros((q, K))
+    for i in range(K):
+        # noise = 10**(-2) * np.random.randn(q)
+        y[:, i] = np.dot(D, x_true[:, i]) #+ noise
+        # Add the attacks
+        y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i]
+        y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
+            # y[attacked_sensors[1][0], i] += 0.5 * y[attacked_sensors[1][0], i]
+            # y[attacked_sensors[1][1], i] += 0.5 * y[attacked_sensors[1][1], i]
+    print("y shape: ", y.shape)
+
+    
+
+    G = np.hstack((D, np.eye(q)))
+    #normalize G
+    G = stats.zscore(G, axis=0)
+    tau = 1 / (np.linalg.norm(G, ord=2)**2) - 10**(-8)
+    lam = 1
+
+    x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
+
+    fig, ax = plt.subplots()
+    for x,true_x,a in zip(x_hat,x_true.T, a_hat):
+        real_targets_location = np.where(true_x == 1)[0]
+        estimated_targets_location = np.argsort(x)[-3:]
+        estimated_attacked_sensors = np.argsort(np.abs(a))[-2:]
+        print("Estimated attacked sensors: ", estimated_attacked_sensors)
+
+        # Pulisci il grafico precedente
+        ax.clear()
+
+        # Plotta i nuovi dati
+        ax.plot(room_grid[0, real_targets_location], room_grid[1, real_targets_location], 's', markersize=9, 
+                markeredgecolor=np.array([40, 208, 220])/255, 
+                markerfacecolor=np.array([40, 208, 220])/255)
+        # update true location by subtracting 1 from each element as red circles
+        ax.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 'x', markersize=9, 
+                markeredgecolor=np.array([255, 0, 0])/255, 
+                markerfacecolor=np.array([255, 255, 255])/255)
+        # Plot of sensors
+        ax.scatter(sensor_coords[:, 0], sensor_coords[:, 1], s=50, c='pink', alpha=0.5, label='Sensors')
+
+        ax.plot(sensor_coords[estimated_attacked_sensors[0], 0], sensor_coords[estimated_attacked_sensors[0], 1], 'o', markersize=12, 
+                markeredgecolor=np.array([255, 0, 0])/255, 
+                markerfacecolor='none')
+        ax.plot(sensor_coords[estimated_attacked_sensors[1], 0], sensor_coords[estimated_attacked_sensors[1], 1], 'o', markersize=12, 
+                markeredgecolor=np.array([255, 0, 0])/255, 
+                markerfacecolor='none')
+
+        ax.grid(True)
+        ax.legend(['True Targets', 'Estimated Targets', 'Sensors', 'Attacked sensors'], loc='best')
+
+        ax.set_xticks(np.arange(100, 1001, 100))
+        ax.set_yticks(np.arange(100, 1001, 100))
+        ax.set_xlabel('(cm)')
+        ax.set_ylabel('(cm)')
+        ax.set_xlim([0, 1000])
+        ax.set_ylim([0, 1000])
+        ax.set_aspect('equal', adjustable='box')
+
+        # Aggiorna la figura
+        plt.pause(0.5)
+        
+
+    # Mostra il grafico finale
+    plt.show()
+    return 
 
 
 
@@ -578,5 +712,5 @@ if __name__ == "__main__":
     #task_1()
     #task_2()
     #task_3()
-    task_4()
-    # task_4_optional()
+    # task_4()
+    task_4_optional()
