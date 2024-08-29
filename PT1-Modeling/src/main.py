@@ -97,6 +97,28 @@ def Localization_with_attacks(n, q, G, tau, lam, y):
 
     return w_estimated, w_estimated_supp, iterations
 
+def observer(n, q, A, G, tau, lam, y, K):
+
+    # Estimate x_tilda using ISTA
+    lam_weights = np.concatenate((np.full(n, 10), np.full(q,20)))
+    x_hat = []
+    a_hat = []
+    z_hat = []
+
+    z_0 = np.zeros(n+q)
+    x_hat.append(z_0[:n])
+    a_hat.append(z_0[n:])
+    z_hat.append(z_0)
+
+    for k in range(K-1):
+        z = z_hat[k] + (np.dot(tau, np.dot(G.T, (y[:,k] - np.dot(G, z_hat[k])))))
+        gamma = tau * lam * lam_weights
+        z_hat_plus = IST(z, gamma)
+        x_hat.append(np.dot(A,z_hat_plus[:n]))
+        a_hat.append(z_hat_plus[n:])
+        z_hat.append(np.hstack((x_hat[k+1], a_hat[k+1])))
+    return x_hat, a_hat
+
 #task 1
 def task_1():
 
@@ -444,9 +466,117 @@ def task_3():
 
     plt.show()
 
+def task_4():
+    np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
+    cwd = os.getcwd()
+    #original matrices
+    # mat = sio.loadmat(cwd + r'/CPS_project/PT1-Modeling/src/utils/tracking_moving_targets.mat')
+    mat = sio.loadmat(cwd + r'/../utils/tracking_moving_targets.mat')
+
+    A = mat['A']
+    y = mat['Y']
+    D = mat['D']
+    n = D.shape[1]
+    q = D.shape[0]
+    K = y.shape[1]
+    sensor_coords = np.array([
+        [80,  750],[100,  345],[70, 170],[190, 930],[170, 30],[240, 320],[260, 360],[260, 460],[350, 700],[370, 410],
+        [400, 950],[330, 640],[410, 650],[550, 20],[620, 750],[760, 760],[650,  10],[660, 230],[710, 195],[870, 650],
+        [920, 950],[930, 610],[960, 190],[970, 260],[970, 980]
+    ])
+
+    G = np.hstack((D, np.eye(q)))
+    #normalize G
+    G = stats.zscore(G, axis=0)
+
+    tau = 1 / (np.linalg.norm(G, ord=2)**2) - 10**(-8)
+    lam = 1
+    x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
+
+
+    # # Extract the estimated targets' location by taking the 3 greatest values of the first n elements of w_estimated
+    # estimated_targets_location = np.argsort(w_estimated[:n])[-3:]
+
+    # # Extract the estimated attacked vectors from the support of the last q eleemnts of w_estimated
+    # estimated_attacked_sensors = np.where(w_estimated[n:] != 0)[0]
+    
+    # print("Estimated targets location: ", estimated_targets_location)
+    # print("Estimated attacked sensors: ", estimated_attacked_sensors)
+
+    H = 10  # Grid's height (# celle)
+    L = 10  # Grid's length (# celle)
+    W = 100  # Cell's width (cm)
+
+    room_grid = np.zeros((2, n))
+    for i in range(n):
+        room_grid[0, i] = W//2 + (i % L) * W
+        room_grid[1, i] = W//2 + (i // L) * W
+    
+    fig, ax = plt.subplots()
+    true_location = []
+    true_location.append([21,34,85])
+    # append other 49 true locations by subtracting 1 from each element
+    for i in range(49):
+        true_location.append([x-1 for x in true_location[i]])
+
+    
+
+
+    for x,true_x,a in zip(x_hat,true_location, a_hat):
+        estimated_targets_location = np.argsort(x)[-3:]
+        estimated_attacked_sensors = np.argsort(a)[-2:]
+        # estimated_attacked_sensors = np.where(a != 0)[0]
+        print("Estimated attacked sensors: ", estimated_attacked_sensors)
+
+        # Pulisci il grafico precedente
+        ax.clear()
+
+        # Plotta i nuovi dati
+        ax.plot(room_grid[0, true_x], room_grid[1, true_x], 's', markersize=9, 
+                markeredgecolor=np.array([40, 208, 220])/255, 
+                markerfacecolor=np.array([40, 208, 220])/255)
+        # update true location by subtracting 1 from each element as red circles
+        ax.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 'x', markersize=9, 
+                markeredgecolor=np.array([255, 0, 0])/255, 
+                markerfacecolor=np.array([255, 255, 255])/255)
+
+        # Plot of sensors
+        ax.scatter(sensor_coords[:, 0], sensor_coords[:, 1], s=50, c='pink', alpha=0.5, label='Sensors')
+
+        ax.plot(sensor_coords[estimated_attacked_sensors[0], 0], sensor_coords[estimated_attacked_sensors[0], 1], 'o', markersize=12, 
+                markeredgecolor=np.array([255, 0, 0])/255, 
+                markerfacecolor='none')
+        ax.plot(sensor_coords[estimated_attacked_sensors[1], 0], sensor_coords[estimated_attacked_sensors[1], 1], 'o', markersize=12, 
+                markeredgecolor=np.array([255, 0, 0])/255, 
+                markerfacecolor='none')
+
+        ax.grid(True)
+        ax.legend(['True Targets', 'Estimated Targets', 'Sensors', 'Attacked sensors'], loc='best')
+
+        ax.set_xticks(np.arange(100, 1001, 100))
+        ax.set_yticks(np.arange(100, 1001, 100))
+        ax.set_xlabel('(cm)')
+        ax.set_ylabel('(cm)')
+        ax.set_xlim([0, 1000])
+        ax.set_ylim([0, 1000])
+        ax.set_aspect('equal', adjustable='box')
+
+        # Aggiorna la figura
+        plt.pause(0.5)
+        
+
+    # Mostra il grafico finale
+    plt.show()
+    return
+
+############################################# TASK 4 OPTIONAL ##############################################################################
+
+
 
 
 if __name__ == "__main__":
     #task_1()
     #task_2()
-    task_3()
+    #task_3()
+    task_4()
+    # task_4_optional()
