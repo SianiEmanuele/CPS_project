@@ -1,7 +1,7 @@
 import os as os
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import ISTA, IST
+from utils import ISTA, IST, DISTA
 import scipy.io as sio
 from scipy import stats
 
@@ -93,9 +93,32 @@ def Localization_with_attacks(n, q, G, tau, lam, y):
     # Estimate x_tilda using ISTA
     lam_weights = np.concatenate((np.full(n, 10), np.full(q,20)))
     w = np.zeros(n+q)
-    w_estimated, w_estimated_supp, iterations = ISTA(w, G, tau, lam * lam_weights, y)
+    w_estimated, w_estimated_supp, iterations = DISTA(w, G, tau, lam * lam_weights, y)
 
     return w_estimated, w_estimated_supp, iterations
+
+def Distributed_localization_with_attacks(n, q, G, Q, tau, lam, y):
+    eigenvalues = np.linalg.eigvals(Q)
+    eig_equal_1 = np.count_nonzero(np.isclose(np.abs(eigenvalues), 1))
+    print("Number of eigenvalues equal to 1: ", eig_equal_1)
+    if eig_equal_1 == 1 and np.max(np.abs(np.all(eigenvalues))):
+        print("Condition for consenus is satisfied")
+    else:
+        print("Condition for consenus is not satisfied")
+
+    print("Q eigenvalues: ", eigenvalues)
+
+
+
+
+    # Estimate x_tilda using DISTA
+    lam_weights = np.concatenate((np.full(n, 10), np.full(q,0.1)))
+    print("gamma: ", lam * lam_weights)
+    z_0 = np.zeros((q,n+q))
+    print(z_0)
+    z_estimated, z_estimated_supp, iterations = DISTA(z_0, G, Q, tau, lam * lam_weights, y)
+
+    return z_estimated, z_estimated_supp, iterations
 
 #task 1
 def task_1():
@@ -443,9 +466,66 @@ def task_3():
     plt.gca().set_aspect('equal', adjustable='box')
 
     plt.show()
+    
 
-    def task_5():
-        return 
+def task_5():
+    cwd = os.getcwd()
+    #original matrices
+    mat = sio.loadmat(cwd + r'/src/utils/distributed_localization_data.mat')
+
+    y = np.squeeze(mat['y'])
+    D = mat['D']
+    Q = mat['Q_4']
+
+    n = D.shape[1]
+    q = D.shape[0]
+
+    G = np.hstack((D, np.eye(q)))
+
+    tau = 1e-7
+    print("Tau: ", tau)
+    lam = 1
+    
+    z_estimated, z_estimated_supp, iterations = Distributed_localization_with_attacks(n, q, G, Q, tau, lam, y)
+
+    # Extract the estimated targets' location by taking the 3 greatest values of the first n elements of w_estimated
+    estimated_targets_location = np.argsort(z_estimated[:,:n])[-3:]
+
+    # Extract the estimated attacked vectors from the support of the last q eleemnts of w_estimated
+    estimated_attacked_sensors = np.where(z_estimated[:,n:] < 0.002)[0]
+    
+    print("Estimated targets location: ", estimated_targets_location)
+    print("Estimated attacked sensors: ", estimated_attacked_sensors)
+
+    H = 10  # Grid's height (# celle)
+    L = 10  # Grid's length (# celle)
+    W = 100  # Cell's width (cm)
+
+    room_grid = np.zeros((2, n))
+
+    for i in range(n):
+        room_grid[0, i] = W//2 + (i % L) * W
+        room_grid[1, i] = W//2 + (i // L) * W
+
+#     # Plots
+#     plt.figure()
+#     plt.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 's', markersize=9, 
+#             markeredgecolor=np.array([40, 208, 220])/255, 
+#             markerfacecolor=np.array([40, 208, 220])/255)
+#     plt.grid(True)
+#     plt.legend(['Targets'], loc='best')
+# #     plt.plot(room_grid[0, estimated_attacked_sensors], room_grid[1, estimated_attacked_sensors], 's', markersize=9, 
+# #             markeredgecolor=np.array([255, 0, 0])/255, 
+# #             markerfacecolor=np.array([255, 0, 0])/255)
+
+#     plt.xticks(np.arange(100, 1001, 100))
+#     plt.yticks(np.arange(100, 1001, 100))
+#     plt.xlabel('(cm)')
+#     plt.ylabel('(cm)')
+#     plt.axis([0, 1000, 0, 1000])
+#     plt.gca().set_aspect('equal', adjustable='box')
+
+#     plt.show() 
 
 
 
@@ -454,3 +534,4 @@ if __name__ == "__main__":
     #task_1()
     #task_2()
     # task_3()
+    task_5()
