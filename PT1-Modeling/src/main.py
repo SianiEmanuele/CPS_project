@@ -470,13 +470,20 @@ def task_4():
     np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
     cwd = os.getcwd()
     #original matrices
-    mat = sio.loadmat(cwd + r'/src/utils/tracking_moving_targets.mat')
+    # mat = sio.loadmat(cwd + r'/CPS_project/PT1-Modeling/src/utils/tracking_moving_targets.mat')
+    mat = sio.loadmat(cwd + r'/../utils/tracking_moving_targets.mat')
+
     A = mat['A']
     y = mat['Y']
     D = mat['D']
     n = D.shape[1]
     q = D.shape[0]
     K = y.shape[1]
+    sensor_coords = np.array([
+        [80,  750],[100,  345],[70, 170],[190, 930],[170, 30],[240, 320],[260, 360],[260, 460],[350, 700],[370, 410],
+        [400, 950],[330, 640],[410, 650],[550, 20],[620, 750],[760, 760],[650,  10],[660, 230],[710, 195],[870, 650],
+        [920, 950],[930, 610],[960, 190],[970, 260],[970, 980]
+    ])
 
     G = np.hstack((D, np.eye(q)))
     #normalize G
@@ -533,9 +540,18 @@ def task_4():
                 markeredgecolor=np.array([255, 0, 0])/255, 
                 markerfacecolor=np.array([255, 255, 255])/255)
 
+        # Plot of sensors
+        ax.scatter(sensor_coords[:, 0], sensor_coords[:, 1], s=50, c='pink', alpha=0.5, label='Sensors')
+
+        ax.plot(sensor_coords[estimated_attacked_sensors[0], 0], sensor_coords[estimated_attacked_sensors[0], 1], 'o', markersize=12, 
+                markeredgecolor=np.array([255, 0, 0])/255, 
+                markerfacecolor='none')
+        ax.plot(sensor_coords[estimated_attacked_sensors[1], 0], sensor_coords[estimated_attacked_sensors[1], 1], 'o', markersize=12, 
+                markeredgecolor=np.array([255, 0, 0])/255, 
+                markerfacecolor='none')
 
         ax.grid(True)
-        ax.legend(['True Targets', 'Estimated Targets'], loc='best')
+        ax.legend(['True Targets', 'Estimated Targets', 'Sensors', 'Attacked sensors'], loc='best')
 
         ax.set_xticks(np.arange(100, 1001, 100))
         ax.set_yticks(np.arange(100, 1001, 100))
@@ -551,10 +567,16 @@ def task_4():
 
     # Mostra il grafico finale
     plt.show()
-    return 
+    return
+
+############################################# TASK 4 OPTIONAL ##############################################################################
+
+
+
 
 if __name__ == "__main__":
     #task_1()
     #task_2()
     #task_3()
     task_4()
+    # task_4_optional()
