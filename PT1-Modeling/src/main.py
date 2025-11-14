@@ -160,27 +160,27 @@ def task_1():
         min_iterations.append(np.min(num_iterations))
         mean_iterations.append(np.mean(num_iterations))
 
-        #plotting correct estimations percentage
-        plt.plot(q_list, correct_estimations_percentage)
-        plt.xlabel("q")
-        plt.ylabel("Correct estimations percentage")
-        plt.title("Percentage of correct estimations in function of q")
-        plt.grid()
-        plt.show()
+    #plotting correct estimations percentage
+    plt.plot(q_list, correct_estimations_percentage)
+    plt.xlabel("q")
+    plt.ylabel("Correct estimations percentage")
+    plt.title("Percentage of correct estimations in function of q")
+    plt.grid()
+    plt.show()
 
-        #plotting min, max and mean iterations in 3 different lines
-        fig, axs = plt.subplots(3)
-        fig.suptitle('Iterations in function of q')
-        axs[0].plot(q_list, min_iterations)
-        axs[0].set_title('Min iterations')
-        axs[1].plot(q_list, max_iterations)
-        axs[1].set_title('Max iterations')
-        axs[2].plot(q_list, mean_iterations)
-        axs[2].set_title('Mean iterations')
-        axs[0].grid()
-        axs[1].grid()
-        axs[2].grid()
-        plt.show()
+    #plotting min, max and mean iterations in 3 different lines
+    fig, axs = plt.subplots(3)
+    fig.suptitle('Iterations in function of q')
+    axs[0].plot(q_list, min_iterations)
+    axs[0].set_title('Min iterations')
+    axs[1].plot(q_list, max_iterations)
+    axs[1].set_title('Max iterations')
+    axs[2].plot(q_list, mean_iterations)
+    axs[2].set_title('Mean iterations')
+    axs[0].grid()
+    axs[1].grid()
+    axs[2].grid()
+    plt.show()
 
     ##################################### QUESTION 4 ##############################################################
 
@@ -222,28 +222,28 @@ def task_1():
     plt.title("q = 10 | Percentage of correct estimations in function of tau")
     plt.show()
 
-    q = 20
-    correct_estimations_percentage_q_20 = []
-    max_iterations_q_20 = []
-    min_iterations_q_20 = []
-    mean_iterations_q_20 = []
+    q = 24
+    correct_estimations_percentage_q_24 = []
+    max_iterations_q_24 = []
+    min_iterations_q_24 = []
+    mean_iterations_q_24 = []
 
     for tau in tau_list:
         C = np.random.randn(q, p)
         C_l_2_norm = np.linalg.norm(C, ord=2)
         lam = 1 / (100*tau)
         correct_estimations, num_iterations = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
-        correct_estimations_percentage_q_20.append(correct_estimations*100/runs)
-        max_iterations_q_20.append(np.max(num_iterations))
-        min_iterations_q_20.append(np.min(num_iterations))
-        mean_iterations_q_20.append(np.mean(num_iterations))
+        correct_estimations_percentage_q_24.append(correct_estimations*100/runs)
+        max_iterations_q_24.append(np.max(num_iterations))
+        min_iterations_q_24.append(np.min(num_iterations))
+        mean_iterations_q_24.append(np.mean(num_iterations))
 
     #plotting correct estimations percentage with both q=10 and q=20
     plt.plot(tau_list, correct_estimations_percentage_q_10, label="q=10", color='r')
-    plt.plot(tau_list, correct_estimations_percentage_q_20, label="q=20", color='b')
+    plt.plot(tau_list, correct_estimations_percentage_q_24, label="q=24", color='b')
     plt.xlabel("tau")
     plt.ylabel("Correct estimations percentage")
-    plt.title("q = 20 | Percentage of correct estimations in function of tau")
+    plt.title("q = 24 | Percentage of correct estimations in function of tau")
     plt.legend()
     plt.grid()
     plt.show()
@@ -252,15 +252,15 @@ def task_1():
     fig, axs = plt.subplots(3, figsize=(7, 10))
     fig.suptitle('Iterations in function of tau')
     axs[0].plot(tau_list, min_iterations_q_10, label="q=10", color='r')
-    axs[0].plot(tau_list, min_iterations_q_20, label="q=20", color='b')
+    axs[0].plot(tau_list, min_iterations_q_24, label="q=24", color='b')
     axs[0].set_title('Min iterations')
     axs[0].legend()
     axs[1].plot(tau_list, max_iterations_q_10, label="q=10", color='r')
-    axs[1].plot(tau_list, max_iterations_q_20, label="q=20", color='b')
+    axs[1].plot(tau_list, max_iterations_q_24, label="q=24", color='b')
     axs[1].legend()
     axs[1].set_title('Max iterations')
     axs[2].plot(tau_list, mean_iterations_q_10, label="q=10", color='r')
-    axs[2].plot(tau_list, mean_iterations_q_20, label="q=20", color='b')
+    axs[2].plot(tau_list, mean_iterations_q_24, label="q=24", color='b')
     axs[2].set_title('Mean iterations')
     axs[2].legend()
     axs[0].grid()
@@ -296,26 +296,26 @@ def task_1():
         min_iterations_q_10.append(np.min(num_iterations))
         mean_iterations_q_10.append(np.mean(num_iterations))
     
-    q = 20
+    q = 24
 
-    correct_estimations_percentage_q_20 = []
-    max_iterations_q_20 = []
-    min_iterations_q_20 = []
-    mean_iterations_q_20 = []
+    correct_estimations_percentage_q_24 = []
+    max_iterations_q_24 = []
+    min_iterations_q_24 = []
+    mean_iterations_q_24 = []
 
     for lam in lam_list:
         C = np.random.randn(q, p)
         C_l_2_norm = np.linalg.norm(C, ord=2)
         correct_estimations, num_iterations = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
-        correct_estimations_percentage_q_20.append(correct_estimations*100/runs)
-        max_iterations_q_20.append(np.max(num_iterations))
-        min_iterations_q_20.append(np.min(num_iterations))
-        mean_iterations_q_20.append(np.mean(num_iterations))
+        correct_estimations_percentage_q_24.append(correct_estimations*100/runs)
+        max_iterations_q_24.append(np.max(num_iterations))
+        min_iterations_q_24.append(np.min(num_iterations))
+        mean_iterations_q_24.append(np.mean(num_iterations))
     
 
     #plotting correct estimations percentage with both q=10 and q=20
     plt.plot(lam_list, correct_estimations_percentage_q_10, label="q=10", color='r')
-    plt.plot(lam_list, correct_estimations_percentage_q_20, label="q=20", color='b')
+    plt.plot(lam_list, correct_estimations_percentage_q_24, label="q=24", color='b')
     plt.xlabel("lambda")
     plt.ylabel("Correct estimations percentage")
     plt.title("Percentage of correct estimations in function of lambda")
@@ -327,15 +327,15 @@ def task_1():
     fig, axs = plt.subplots(3, figsize=(7, 10))
     fig.suptitle('Iterations in function of lambda')
     axs[0].plot(lam_list, min_iterations_q_10, label="q=10", color='r')
-    axs[0].plot(lam_list, min_iterations_q_20, label="q=20", color='b')
+    axs[0].plot(lam_list, min_iterations_q_24, label="q=24", color='b')
     axs[0].set_title('Min iterations')
     axs[0].legend()
     axs[1].plot(lam_list, max_iterations_q_10, label="q=10", color='r')
-    axs[1].plot(lam_list, max_iterations_q_20, label="q=20", color='b')
+    axs[1].plot(lam_list, max_iterations_q_24, label="q=24", color='b')
     axs[1].legend()
     axs[1].set_title('Max iterations')
     axs[2].plot(lam_list, mean_iterations_q_10, label="q=10", color='r')
-    axs[2].plot(lam_list, mean_iterations_q_20, label="q=20", color='b')
+    axs[2].plot(lam_list, mean_iterations_q_24, label="q=24", color='b')
     axs[2].set_title('Mean iterations')
     axs[2].legend()
     axs[0].grid()
@@ -408,6 +408,13 @@ def task_2():
 # In contrast, the attacked sensors were clearly identified without requiring any additional cleaning.
 def task_3():
 
+    sensor_coords = np.array([
+        [80,  750],[100,  345],[70, 170],[190, 930],[170, 30],[240, 320],[260, 360],[260, 460],[350, 700],[370, 410],
+        [400, 950],[330, 640],[410, 650],[550, 20],[620, 750],[760, 760],[650,  10],[660, 230],[710, 195],[870, 650],
+        [920, 950],[930, 610],[960, 190],[970, 260],[970, 980]
+    ])
+    true_location = []
+    true_location.append([22,35,86])
     cwd = os.getcwd()
     #original matrices
     mat = sio.loadmat(cwd + r'/src/utils/localization.mat')
@@ -448,20 +455,34 @@ def task_3():
 
     # Plots
     plt.figure()
-    plt.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 's', markersize=9, 
-            markeredgecolor=np.array([40, 208, 220])/255, 
-            markerfacecolor=np.array([40, 208, 220])/255)
     plt.grid(True)
-    plt.legend(['Targets'], loc='best')
-#     plt.plot(room_grid[0, estimated_attacked_sensors], room_grid[1, estimated_attacked_sensors], 's', markersize=9, 
-#             markeredgecolor=np.array([255, 0, 0])/255, 
-#             markerfacecolor=np.array([255, 0, 0])/255)
+
+    # True targets plot
+    plt.plot(room_grid[0, true_location], room_grid[1, true_location], 's', markersize=9, 
+            markeredgecolor=np.array([40, 208, 220])/255, 
+            markerfacecolor=np.array([40, 208, 220])/255)    
+    # Estimated targets plot
+    plt.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 'x', markersize=9, 
+                markeredgecolor=np.array([255, 0, 0])/255, 
+                markerfacecolor=np.array([255, 255, 255])/255)
+
+    # Sensors plot
+    plt.scatter(sensor_coords[:, 0], sensor_coords[:, 1], s=50, c='pink', alpha=0.5, label='Sensors')
+    
+    # Attacked sensors plot
+    plt.plot(sensor_coords[estimated_attacked_sensors[0], 0], sensor_coords[estimated_attacked_sensors[0], 1], 'o', markersize=12, 
+                markeredgecolor=np.array([255, 0, 0])/255, 
+                markerfacecolor='none')
+    plt.plot(sensor_coords[estimated_attacked_sensors[1], 0], sensor_coords[estimated_attacked_sensors[1], 1], 'o', markersize=12, 
+            markeredgecolor=np.array([255, 0, 0])/255, 
+            markerfacecolor='none')
 
     plt.xticks(np.arange(100, 1001, 100))
     plt.yticks(np.arange(100, 1001, 100))
     plt.xlabel('(cm)')
     plt.ylabel('(cm)')
     plt.axis([0, 1000, 0, 1000])
+    plt.legend(['True Targets', 'Estimated Targets', 'Sensors', 'Attacked sensors'], loc='best')
     plt.gca().set_aspect('equal', adjustable='box')
 
     plt.show()
@@ -514,18 +535,17 @@ def task_4():
     
     fig, ax = plt.subplots()
     true_location = []
-    true_location.append([21,34,85])
+    true_location.append([22,35,86])
     # append other 49 true locations by subtracting 1 from each element
-    for i in range(49):
+    for i in range(50):
         true_location.append([x-1 for x in true_location[i]])
-
     
-
+    # skip first element
+    true_location = true_location[1:]
 
     for x,true_x,a in zip(x_hat,true_location, a_hat):
         estimated_targets_location = np.argsort(x)[-3:]
         estimated_attacked_sensors = np.argsort(a)[-2:]
-        # estimated_attacked_sensors = np.where(a != 0)[0]
         print("Estimated attacked sensors: ", estimated_attacked_sensors)
 
         # Pulisci il grafico precedente
@@ -597,7 +617,7 @@ def task_4_optional():
         room_grid[0, i] = W//2 + (i % L) * W
         room_grid[1, i] = W//2 + (i // L) * W
     
-    targets_location = [21,34,85]
+    targets_location = [21,35,86]
     # append other 49 true locations by subtracting 1 from each element
     x_true = np.zeros((n, K))
     for loc in targets_location:
@@ -659,6 +679,7 @@ def task_4_optional():
 
     x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
 
+
     fig, ax = plt.subplots()
     for x,true_x,a in zip(x_hat,x_true.T, a_hat):
         real_targets_location = np.where(true_x == 1)[0]
@@ -709,8 +730,8 @@ def task_4_optional():
 
 
 if __name__ == "__main__":
-    #task_1()
-    #task_2()
-    #task_3()
+    # task_1()
+    # task_2()
+    # task_3()
     # task_4()
     task_4_optional()
