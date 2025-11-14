@@ -26,6 +26,8 @@ def ISTA(x_0, C, tau, lam, y):
     num_iterations=0
     
     while (l_2_norm >= (10**(-12))):
+        # Note the inverted sign in the update step compared to the original report
+        # Note that A is considered as the identity matrix here
         z = x_k + (np.dot(tau, np.dot(C.T, (y - np.dot(C, x_k)))))
         x_k_1 = IST(z, gamma)
         l_2_norm = linalg.norm(x_k_1 - x_k)
