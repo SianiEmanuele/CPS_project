@@ -54,6 +54,9 @@ L = diag(in_degrees);
 %%%%%%%%%%%%%%%%%%%%%%%%%% PLOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 N = size(Ad, 1);
 Ad_aug = zeros(N+1);
+
+% N.B: For plotting matlab takes the transpose of the Adj matrix we use in
+% control theory
 Ad_aug(2:end, 2:end) = Ad';
 Ad_aug(1, 2:end) = diag(G)'; 
 g_aug = digraph(Ad_aug);
@@ -62,10 +65,10 @@ g_aug = digraph(Ad_aug);
 figure;
 h = plot(g_aug);
 
+%%%%%%%%%%%%% Layout fixes for prettier plot %%%%%%%%%%%%%%%%%%%%%%%%%%%
 % 4. Relabel Nodes
 h.NodeLabel = arrayfun(@(x) num2str(x), 0:N, 'UniformOutput', false);
 
-% --- CONDITIONAL LAYOUT ---
 if topology_type == 3 | topology_type == 2
     % Manual Layout: Leader in Middle
     x_coords = zeros(1, N+1);
@@ -94,14 +97,13 @@ if topology_type == 3 | topology_type == 2
     h.XData = x_coords;
     h.YData = y_coords;
     axis equal; % Keeps the circle round
-    axis off;   % Hides axes for cleaner look
+    axis off; 
 else
     % Standard Layout for other topologies
     layout(h, 'layered', 'Sources', 1);
 end
 % --------------------------
 
-% 5. Styling
 % Highlight Node 0 (Leader, internal index 1)
 highlight(h, 1, 'NodeColor', 'r', 'MarkerSize', 8);
 
