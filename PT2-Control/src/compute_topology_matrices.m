@@ -29,22 +29,6 @@ switch topology_type
         G = diag([1 0 0 0 0 0]);
 
     case 3
-        % Topology 3:
-        % Leader talks to half of the followers, they talk to only one
-        % other
-        Ad = [
-            0 0 0 0 0 0;
-            0 0 0 0 0 0;
-            0 0 0 0 0 0;
-            1 0 0 0 0 0;
-            0 1 0 0 0 0;
-            0 0 1 0 0 0;
-        ]; 
-
-        G = diag([1 1 1 0 0 0]);
-       
-
-    case 4
         % Topology 4 - baseline:
         % Leader talks to all the followers
 
@@ -82,7 +66,7 @@ h = plot(g_aug);
 h.NodeLabel = arrayfun(@(x) num2str(x), 0:N, 'UniformOutput', false);
 
 % --- CONDITIONAL LAYOUT ---
-if topology_type == 4 | topology_type == 2
+if topology_type == 3 | topology_type == 2
     % Manual Layout: Leader in Middle
     x_coords = zeros(1, N+1);
     y_coords = zeros(1, N+1);

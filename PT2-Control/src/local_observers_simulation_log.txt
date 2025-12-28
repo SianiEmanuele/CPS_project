@@ -1,0 +1,440 @@
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.0496). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.3541). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: false| Convergence time: 109.60 s Average Control Energy ||u||_2^2: 3.6543e-07
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.3363). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: false| Convergence time: 20.10 s Average Control Energy ||u||_2^2: 7.9271e-03
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.4314). The global disagreement error will tend to 0.
+  [WARNING] Topology #1: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 100| ref: ramp| noise: false| Convergence time: 17.30 s Average Control Energy ||u||_2^2: 8.0199e-03
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.0496). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0708). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: false| Convergence time:  s Average Control Energy ||u||_2^2: 1.3272e-08
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.3363). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0354). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: false| Convergence time: 143.30 s Average Control Energy ||u||_2^2: 3.4436e-04
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.4314). The global disagreement error will tend to 0.
+  [WARNING] Topology #2: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 100| ref: ramp| noise: false| Convergence time:  s Average Control Energy ||u||_2^2: 3.0794e-03
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.0496). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: false| Convergence time: 143.80 s Average Control Energy ||u||_2^2: 3.1343e-07
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.3363). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: false| Convergence time: 32.50 s Average Control Energy ||u||_2^2: 7.6224e-03
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.4314). The global disagreement error will tend to 0.
+  [WARNING] Topology #3: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 100| ref: ramp| noise: false| Convergence time: 28.00 s Average Control Energy ||u||_2^2: 5.3436e-03
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.4150). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.3541). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: constant| noise: false| Convergence time: 12.80 s Average Control Energy ||u||_2^2: 3.1280e-06
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.3582). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: sinusoidal| noise: false| Convergence time: 5.60 s Average Control Energy ||u||_2^2: 3.4660e-01
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.1589). The global disagreement error will tend to 0.
+  [WARNING] Topology #1: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 1| ref: ramp| noise: false| Convergence time: 7.30 s Average Control Energy ||u||_2^2: 2.2445e-02
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.4150). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0708). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: constant| noise: false| Convergence time: 248.90 s Average Control Energy ||u||_2^2: 2.0230e-07
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -1.2129). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0354). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: sinusoidal| noise: false| Convergence time: 37.70 s Average Control Energy ||u||_2^2: 7.1282e-03
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -1.0962). The global disagreement error will tend to 0.
+  [WARNING] Topology #2: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 1| ref: ramp| noise: false| Convergence time: 50.60 s Average Control Energy ||u||_2^2: 5.6929e-03
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.4150). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: constant| noise: false| Convergence time: 15.90 s Average Control Energy ||u||_2^2: 2.8379e-06
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.3582). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: sinusoidal| noise: false| Convergence time: 6.10 s Average Control Energy ||u||_2^2: 2.6444e-01
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.1589). The global disagreement error will tend to 0.
+  [WARNING] Topology #3: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 1| ref: ramp| noise: false| Convergence time: 4.00 s Average Control Energy ||u||_2^2: 1.7568e-02
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.9114). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.3541). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: constant| noise: false| Convergence time: 4.60 s Average Control Energy ||u||_2^2: 1.0609e-05
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.0210). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: sinusoidal| noise: false| Convergence time: 4.50 s Average Control Energy ||u||_2^2: 4.5795e+00
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.0104). The global disagreement error will tend to 0.
+  [WARNING] Topology #1: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 100I, R: 1| ref: ramp| noise: false| Convergence time: 7.28 s Average Control Energy ||u||_2^2: 4.2941e-02
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.9114). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0708). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: constant| noise: false| Convergence time: 27.85 s Average Control Energy ||u||_2^2: 1.6654e-06
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -1.0139). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0354). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: sinusoidal| noise: false| Convergence time: 8.16 s Average Control Energy ||u||_2^2: 1.2744e-01
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -1.0069). The global disagreement error will tend to 0.
+  [WARNING] Topology #2: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 100I, R: 1| ref: ramp| noise: false| Convergence time: 6.60 s Average Control Energy ||u||_2^2: 1.3649e-02
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.9114). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: constant| noise: false| Convergence time: 4.70 s Average Control Energy ||u||_2^2: 1.0267e-05
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.0210). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: sinusoidal| noise: false| Convergence time: 4.50 s Average Control Energy ||u||_2^2: 3.7425e+00
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.0104). The global disagreement error will tend to 0.
+  [WARNING] Topology #3: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 100I, R: 1| ref: ramp| noise: false| Convergence time: 7.20 s Average Control Energy ||u||_2^2: 4.0170e-02
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.0496). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.3541). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: true| Convergence time: 109.58 s Average Control Energy ||u||_2^2: 3.6700e-07
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.3363). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: true| Convergence time: 20.10 s Average Control Energy ||u||_2^2: 7.9276e-03
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.4314). The global disagreement error will tend to 0.
+  [WARNING] Topology #1: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 100| ref: ramp| noise: true| Convergence time: 17.30 s Average Control Energy ||u||_2^2: 8.0192e-03
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.0496). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0708). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: true| Convergence time:  s Average Control Energy ||u||_2^2: 1.3342e-08
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.3363). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0354). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: true| Convergence time: 143.30 s Average Control Energy ||u||_2^2: 3.4438e-04
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.4314). The global disagreement error will tend to 0.
+  [WARNING] Topology #2: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 100| ref: ramp| noise: true| Convergence time:  s Average Control Energy ||u||_2^2: 3.0794e-03
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.0496). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: true| Convergence time: 143.47 s Average Control Energy ||u||_2^2: 3.1588e-07
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.3363). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: true| Convergence time: 32.50 s Average Control Energy ||u||_2^2: 7.6233e-03
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.4314). The global disagreement error will tend to 0.
+  [WARNING] Topology #3: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 100| ref: ramp| noise: true| Convergence time: 28.00 s Average Control Energy ||u||_2^2: 5.3436e-03
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.4150). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.3541). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: constant| noise: true| Convergence time: 12.76 s Average Control Energy ||u||_2^2: 3.2762e-06
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.3582). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: sinusoidal| noise: true| Convergence time: 5.60 s Average Control Energy ||u||_2^2: 3.4668e-01
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.1589). The global disagreement error will tend to 0.
+  [WARNING] Topology #1: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 1| ref: ramp| noise: true| Convergence time: 7.20 s Average Control Energy ||u||_2^2: 2.2454e-02
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.4150). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0708). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: constant| noise: true| Convergence time: 249.90 s Average Control Energy ||u||_2^2: 2.0782e-07
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -1.2129). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0354). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: sinusoidal| noise: true| Convergence time: 37.70 s Average Control Energy ||u||_2^2: 7.1295e-03
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -1.0962). The global disagreement error will tend to 0.
+  [WARNING] Topology #2: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 1| ref: ramp| noise: true| Convergence time: 50.60 s Average Control Energy ||u||_2^2: 5.6930e-03
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.4150). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: constant| noise: true| Convergence time: 15.70 s Average Control Energy ||u||_2^2: 3.0667e-06
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.3582). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: sinusoidal| noise: true| Convergence time: 6.10 s Average Control Energy ||u||_2^2: 2.6451e-01
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.1589). The global disagreement error will tend to 0.
+  [WARNING] Topology #3: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 1| ref: ramp| noise: true| Convergence time: 4.00 s Average Control Energy ||u||_2^2: 1.7573e-02
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.9114). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.3541). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: constant| noise: true| Convergence time: 4.58 s Average Control Energy ||u||_2^2: 1.6122e-05
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.0210). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: sinusoidal| noise: true| Convergence time: 4.35 s Average Control Energy ||u||_2^2: 4.6060e+00
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.0104). The global disagreement error will tend to 0.
+  [WARNING] Topology #1: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 100I, R: 1| ref: ramp| noise: true| Convergence time: 7.10 s Average Control Energy ||u||_2^2: 4.3419e-02
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.9114). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0708). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: constant| noise: true| Convergence time: 27.80 s Average Control Energy ||u||_2^2: 1.7666e-06
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -1.0139). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0354). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: sinusoidal| noise: true| Convergence time: 8.16 s Average Control Energy ||u||_2^2: 1.2745e-01
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -1.0069). The global disagreement error will tend to 0.
+  [WARNING] Topology #2: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 100I, R: 1| ref: ramp| noise: true| Convergence time: 6.60 s Average Control Energy ||u||_2^2: 1.3639e-02
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.9114). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: constant| noise: true| Convergence time: 4.74 s Average Control Energy ||u||_2^2: 1.5690e-05
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.0210). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: sinusoidal| noise: true| Convergence time: 4.40 s Average Control Energy ||u||_2^2: 3.7465e+00
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.0104). The global disagreement error will tend to 0.
+  [WARNING] Topology #3: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 100I, R: 1| ref: ramp| noise: true| Convergence time: 7.10 s Average Control Energy ||u||_2^2: 4.0515e-02
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.0248). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: true| c = half | Convergence time: 218.77 s Average Control Energy ||u||_2^2: 1.8338e-07
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.1682). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: true| c = half | Convergence time: 41.70 s Average Control Energy ||u||_2^2: 3.1062e-03
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.0248). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: false| c = half | Convergence time: 218.70 s Average Control Energy ||u||_2^2: 1.8300e-07
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.1682). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: false| c = half | Convergence time: 41.70 s Average Control Energy ||u||_2^2: 3.1060e-03
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.2157). The global disagreement error will tend to 0.
+  [WARNING] Topology #1: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 100| ref: ramp| noise: false| c = half | Convergence time: 36.30 s Average Control Energy ||u||_2^2: 7.4263e-03
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.0248). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0354). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: false| c = half | Convergence time:  s Average Control Energy ||u||_2^2: 4.5539e-09
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.1682). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0177). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: false| c = half | Convergence time: 278.40 s Average Control Energy ||u||_2^2: 1.4395e-04
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.2157). The global disagreement error will tend to 0.
+  [WARNING] Topology #2: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 100| ref: ramp| noise: false| c = half | Convergence time:  s Average Control Energy ||u||_2^2: 2.9268e-03
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.0248). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: false| c = half | Convergence time: 287.30 s Average Control Energy ||u||_2^2: 1.5682e-07
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.1682). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0443). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: false| c = half | Convergence time: 33.00 s Average Control Energy ||u||_2^2: 2.8587e-03
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.2157). The global disagreement error will tend to 0.
+  [WARNING] Topology #3: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 100| ref: ramp| noise: false| c = half | Convergence time: 46.80 s Average Control Energy ||u||_2^2: 4.1612e-03
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.2266). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: constant| noise: false| c = half | Convergence time: 23.70 s Average Control Energy ||u||_2^2: 1.6793e-06
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.3515). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: sinusoidal| noise: false| c = half | Convergence time: 6.10 s Average Control Energy ||u||_2^2: 1.0973e-01
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.3624). The global disagreement error will tend to 0.
+  [WARNING] Topology #1: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 1| ref: ramp| noise: false| c = half | Convergence time: 7.20 s Average Control Energy ||u||_2^2: 1.6522e-02
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.2266). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0354). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: constant| noise: false| c = half | Convergence time:  s Average Control Energy ||u||_2^2: 1.0156e-07
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -1.3515). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0177). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: sinusoidal| noise: false| c = half | Convergence time: 72.30 s Average Control Energy ||u||_2^2: 2.9238e-03
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -1.3624). The global disagreement error will tend to 0.
+  [WARNING] Topology #2: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 1| ref: ramp| noise: false| c = half | Convergence time: 129.70 s Average Control Energy ||u||_2^2: 5.1708e-03
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.2266). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: constant| noise: false| c = half | Convergence time: 30.30 s Average Control Energy ||u||_2^2: 1.4909e-06
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.3515). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0443). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: sinusoidal| noise: false| c = half | Convergence time: 6.30 s Average Control Energy ||u||_2^2: 8.8357e-02
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.3624). The global disagreement error will tend to 0.
+  [WARNING] Topology #3: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 1| ref: ramp| noise: false| c = half | Convergence time: 10.60 s Average Control Energy ||u||_2^2: 1.2085e-02
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.7780). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: constant| noise: false| c = half | Convergence time: 5.80 s Average Control Energy ||u||_2^2: 7.9708e-06
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.0653). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: sinusoidal| noise: false| c = half | Convergence time: 5.20 s Average Control Energy ||u||_2^2: 2.7560e+00
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.0326). The global disagreement error will tend to 0.
+  [WARNING] Topology #1: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 100I, R: 1| ref: ramp| noise: false| c = half | Convergence time: 7.20 s Average Control Energy ||u||_2^2: 3.9173e-02
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.7780). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0354). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: constant| noise: false| c = half | Convergence time: 52.58 s Average Control Energy ||u||_2^2: 8.9495e-07
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -1.0501). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0177). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: sinusoidal| noise: false| c = half | Convergence time: 14.10 s Average Control Energy ||u||_2^2: 5.0477e-02
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -1.0250). The global disagreement error will tend to 0.
+  [WARNING] Topology #2: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 100I, R: 1| ref: ramp| noise: false| c = half | Convergence time: 16.40 s Average Control Energy ||u||_2^2: 9.5621e-03
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.7780). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0885). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: constant| noise: false| c = half | Convergence time: 6.10 s Average Control Energy ||u||_2^2: 7.6768e-06
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.0653). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0443). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: sinusoidal| noise: false| c = half | Convergence time: 5.10 s Average Control Energy ||u||_2^2: 2.0914e+00
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.0326). The global disagreement error will tend to 0.
+  [WARNING] Topology #3: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 100I, R: 1| ref: ramp| noise: false| c = half | Convergence time: 7.20 s Average Control Energy ||u||_2^2: 3.4886e-02
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.0990). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.7083). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: false| c = double | Convergence time: 55.00 s Average Control Energy ||u||_2^2: 7.2859e-07
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.6726). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.3541). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: false| c = double | Convergence time: 11.30 s Average Control Energy ||u||_2^2: 2.3215e-02
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.8629). The global disagreement error will tend to 0.
+  [WARNING] Topology #1: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 100| ref: ramp| noise: false| c = double | Convergence time: 11.40 s Average Control Energy ||u||_2^2: 1.0233e-02
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.0990). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1417). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: false| c = double | Convergence time:  s Average Control Energy ||u||_2^2: 3.5400e-08
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.6726). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0708). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: false| c = double | Convergence time: 171.00 s Average Control Energy ||u||_2^2: 8.4372e-04
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.8629). The global disagreement error will tend to 0.
+  [WARNING] Topology #2: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 100| ref: ramp| noise: false| c = double | Convergence time: 205.10 s Average Control Energy ||u||_2^2: 3.2432e-03
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.0990). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.3541). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: constant| noise: false| c = double | Convergence time: 72.10 s Average Control Energy ||u||_2^2: 6.2529e-07
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.6726). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 100| ref: sinusoidal| noise: false| c = double | Convergence time: 17.10 s Average Control Energy ||u||_2^2: 2.2252e-02
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.8629). The global disagreement error will tend to 0.
+  [WARNING] Topology #3: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 100| ref: ramp| noise: false| c = double | Convergence time: 16.80 s Average Control Energy ||u||_2^2: 7.5322e-03
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.7061). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.7083). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: constant| noise: false| c = double | Convergence time: 7.40 s Average Control Energy ||u||_2^2: 5.5806e-06
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.0209). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.3541). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: sinusoidal| noise: false| c = double | Convergence time: 6.20 s Average Control Energy ||u||_2^2: 9.8369e-01
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.0051). The global disagreement error will tend to 0.
+  [WARNING] Topology #1: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 1| ref: ramp| noise: false| c = double | Convergence time: 7.80 s Average Control Energy ||u||_2^2: 3.0135e-02
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.7061). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1417). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: constant| noise: false| c = double | Convergence time: 125.20 s Average Control Energy ||u||_2^2: 3.9499e-07
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.9836). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0708). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: sinusoidal| noise: false| c = double | Convergence time: 35.90 s Average Control Energy ||u||_2^2: 1.6739e-02
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.9869). The global disagreement error will tend to 0.
+  [WARNING] Topology #2: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 1| ref: ramp| noise: false| c = double | Convergence time: 36.60 s Average Control Energy ||u||_2^2: 6.6796e-03
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.7061). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.3541). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: constant| noise: false| c = double | Convergence time: 8.80 s Average Control Energy ||u||_2^2: 5.1827e-06
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.0209). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 1I, R: 1| ref: sinusoidal| noise: false| c = double | Convergence time: 5.60 s Average Control Energy ||u||_2^2: 7.2611e-01
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.0051). The global disagreement error will tend to 0.
+  [WARNING] Topology #3: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 1I, R: 1| ref: ramp| noise: false| c = double | Convergence time: 7.30 s Average Control Energy ||u||_2^2: 2.4992e-02
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -0.9950). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.7083). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: constant| noise: false| c = double | Convergence time: 3.96 s Average Control Energy ||u||_2^2: 1.2835e-05
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.0002). The global disagreement error will tend to 0.
+  [OK] Topology #1: Ao IS Hurwitz (Max Re(eig_Ao) = -0.3541). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: sinusoidal| noise: false| c = double | Convergence time: 3.47 s Average Control Energy ||u||_2^2: 6.2728e+00
+Working on topology #1
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #1: Ac IS Hurwitz (Max Re(eig) = -1.0001). The global disagreement error will tend to 0.
+  [WARNING] Topology #1: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 100I, R: 1| ref: ramp| noise: false| c = double | Convergence time: 7.23 s Average Control Energy ||u||_2^2: 4.5539e-02
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.9950). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1417). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: constant| noise: false| c = double | Convergence time: 15.50 s Average Control Energy ||u||_2^2: 2.9731e-06
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.9968). The global disagreement error will tend to 0.
+  [OK] Topology #2: Ao IS Hurwitz (Max Re(eig_Ao) = -0.0708). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: sinusoidal| noise: false| c = double | Convergence time: 3.38 s Average Control Energy ||u||_2^2: 3.4970e-01
+Working on topology #2
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #2: Ac IS Hurwitz (Max Re(eig) = -0.9984). The global disagreement error will tend to 0.
+  [WARNING] Topology #2: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 100I, R: 1| ref: ramp| noise: false| c = double | Convergence time: 3.75 s Average Control Energy ||u||_2^2: 2.1918e-02
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -0.9950). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.3541). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: constant| noise: false| c = double | Convergence time: 4.00 s Average Control Energy ||u||_2^2: 1.2412e-05
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.0002). The global disagreement error will tend to 0.
+  [OK] Topology #3: Ao IS Hurwitz (Max Re(eig_Ao) = -0.1771). The global state estimation error will tend to 0.
+[METRICS] Local obs | Q: 100I, R: 1| ref: sinusoidal| noise: false| c = double | Convergence time: 3.10 s Average Control Energy ||u||_2^2: 5.4919e+00
+Working on topology #3
+Observability matrix rank is #2. Hence the system is observable  [OK] Topology #3: Ac IS Hurwitz (Max Re(eig) = -1.0001). The global disagreement error will tend to 0.
+  [WARNING] Topology #3: Ao IS NOT  Hurwitz (Max Re(eig_Ao) = 0.0000). The global state estimation error will NOT tend to 0!
+[METRICS] Local obs | Q: 100I, R: 1| ref: ramp| noise: false| c = double | Convergence time: 7.18 s Average Control Energy ||u||_2^2: 4.3264e-02
