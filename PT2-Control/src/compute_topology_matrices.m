@@ -29,7 +29,7 @@ switch topology_type
         G = diag([1 0 0 0 0 0]);
 
     case 3
-        % Topology 4 - baseline:
+        % Topology 3 - baseline:
         % Leader talks to all the followers
 
         Ad = [
