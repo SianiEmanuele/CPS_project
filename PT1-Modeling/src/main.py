@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from utils import ISTA, IST
 import scipy.io as sio
 from scipy import stats
+import networkx as nx
 
         
 def ISTA_runs( runs, p, q, C, tau, lam, x_sparsity):
@@ -34,7 +35,6 @@ def ISTA_runs( runs, p, q, C, tau, lam, x_sparsity):
         if np.array_equal(x_tilda_supports[j], x_estimated_supports[j]):
             correct_estimations += 1
     return correct_estimations, num_iterations
-
 
 def ISTA_runs_with_attacks(runs, n, q, C, tau, lam, x_sparsity, a_sparsity, attack_type, noisy):
     correct_estimations = 0
@@ -118,6 +118,287 @@ def observer(n, q, A, G, tau, lam, y, K):
         a_hat.append(z_hat_plus[n:])
         z_hat.append(np.hstack((x_hat[k+1], a_hat[k+1])))
     return x_hat, a_hat
+
+def plot_abstract_comparison(matrices):
+    """
+    Plots the abstract topology of sensor networks based on adjacency or stochastic matrices.
+    Each topology is displayed in a separate, independent pop-up window using a force-directed layout.
+
+    Args:
+        matrices (list of np.array): A list containing the Q matrices (stochastic/adjacency matrices).
+                                     Each matrix represents the connectivity of a specific network topology.
+                                     Shape of each matrix should be (N, N), where N is the number of sensors.
+
+    Returns:
+        None: The function generates and displays matplotlib figures directly.
+    """
+    
+    titles = ["Topologia 4", "Topologia 8", "Topologia 12", "Topologia 18"]
+
+    # Iterate through each matrix in the provided list
+    for i, Q in enumerate(matrices):
+        
+        # 1. Create a NEW dedicated window for each iteration
+        # The 'i' argument assigns a unique ID to the figure
+        plt.figure(i, figsize=(10, 8)) 
+        
+        # 2. Create the Directed Graph object from the numpy matrix
+        # create_using=nx.DiGraph ensures edge direction is preserved (asymmetric connections)
+        G_raw = nx.from_numpy_array(Q.T, create_using=nx.DiGraph)
+        
+        # 3. Node Relabeling (0-based to 1-based)
+        # Create a mapping dictionary: {0: 1, 1: 2, ..., 24: 25}
+        mapping = {node: node + 1 for node in G_raw.nodes()}
+        G = nx.relabel_nodes(G_raw, mapping)
+        
+        # 4. Layout Calculation
+        # 'spring_layout' positions nodes to minimize edge crossing.
+        # 'k' parameter controls the distance between nodes (higher k = more spread out).
+        # 'seed' fixes the randomness so different runs look the same.
+        pos = nx.spring_layout(G, seed=42, k=0.9)
+        
+        # Set window title
+        plt.title(titles[i], fontsize=14, fontweight='bold')
+        
+        # --- DRAWING PHASE ---
+        
+        # Draw Nodes
+        nx.draw_networkx_nodes(G, pos, 
+                               node_color='lightblue', 
+                               node_size=600, 
+                               edgecolors='black')
+        
+        # Draw Node Labels (Numbers inside circles)
+        nx.draw_networkx_labels(G, pos, font_size=10, font_weight='bold')
+        
+        # Draw Edges (Arrows)
+        # 'connectionstyle' creates curved edges, essential to see bidirectional links (A<->B) separately.
+        nx.draw_networkx_edges(G, pos, 
+                               edge_color='gray', 
+                               arrowstyle='->', 
+                               arrowsize=20,
+                               connectionstyle='arc3, rad=0.1')
+        
+        # 5. Draw Edge Weights
+        # Extract weights from the graph attributes
+        edge_labels = nx.get_edge_attributes(G, 'weight')
+        
+        # Format weights to 2 decimal places to keep the plot clean
+        # Filter out very small weights (effectively zero) if any exist
+        formatted_edge_labels = {edge: f"{weight:.2f}" 
+                                 for edge, weight in edge_labels.items() 
+                                 if weight > 0.001}
+        
+        # Draw the labels on the edges
+        # label_pos=0.3 places the text closer to the source, avoiding overlap with the arrowhead
+        # nx.draw_networkx_edge_labels(G, pos, 
+        #                              edge_labels=formatted_edge_labels,
+        #                              font_size=8,
+        #                              label_pos=0.3)
+        
+        # Turn off axis (coordinate system is abstract, not physical)
+        plt.axis('off')
+
+    # Show all generated windows
+    plt.show()
+    return
+
+def check_strong_connectivity(matrices):
+    """
+    Checks if the directed graphs associated with the provided stochastic matrices 
+    are Strongly Connected.
+    
+    A directed graph is strongly connected if every vertex is reachable from 
+    every other vertex. This condition ensures there are no isolated nodes and 
+    that consensus can be reached (information flows globally).
+
+    Args:
+        matrices (list of np.array): A list containing the Q matrices.
+                                     Assumes Q[i, j] is the weight for the link j -> i (Row-Stochastic).
+
+    Returns:
+        list of bool: A list containing True if the corresponding topology is strongly connected, False otherwise.
+    """
+    
+    results = []
+    print("--- Strong Connectivity Check ---")
+
+    for i, Q in enumerate(matrices):
+        # 1. Graph Creation
+        # We use Q.T to correctly represent the flow direction (Sender -> Receiver)
+        G = nx.from_numpy_array(Q.T, create_using=nx.DiGraph)
+        
+        # 2. Check Strong Connectivity
+        # nx.is_strongly_connected returns True if every node can reach every other node
+        is_strongly_connected = nx.is_strongly_connected(G)
+        results.append(is_strongly_connected)
+        
+        status = "PASSED" if is_strongly_connected else "FAILED"
+        print(f"Topology {i+1}: {status}")
+
+        # 3. Detailed Diagnostics (if check fails)
+        if not is_strongly_connected:
+            # Check for completely isolated nodes (degree 0)
+            isolates = list(nx.isolates(G))
+            if isolates:
+                # Adjust index to be 1-based for readability
+                isolates_1based = [n + 1 for n in isolates]
+                print(f"   -> Warning: Nodes {isolates_1based} are completely isolated (no incoming or outgoing links).")
+            
+            # Check number of Strongly Connected Components (SCCs)
+            # If > 1, the graph is partitioned into islands that don't talk to each other
+            num_sccs = nx.number_strongly_connected_components(G)
+            print(f"   -> Graph is partitioned into {num_sccs} separate components.")
+            
+    print("---------------------------------")
+    return results
+
+def check_doubly_stochastic(matrices):
+    print("--- Doubly Stochastic Check ---")
+    
+    for i, Q in enumerate(matrices):
+        # 1. Controllo Righe (Row Stochastic)
+        # axis=1 somma lungo le righe
+        row_sums = np.sum(Q, axis=1)
+        is_row_stoch = np.allclose(row_sums, 1) # Usa allclose per evitare errori di arrotondamento float
+        
+        # 2. Controllo Colonne (Column Stochastic)
+        # axis=0 somma lungo le colonne
+        col_sums = np.sum(Q, axis=0)
+        is_col_stoch = np.allclose(col_sums, 1)
+        
+        # 3. Verdetto
+        if is_row_stoch and is_col_stoch:
+            print(f"Topology {i+1}: DOUBLY Stochastic (Converges to Average)")
+        elif is_row_stoch:
+            print(f"Topology {i+1}: ROW Stochastic only (Converges to Weighted Value)")
+        elif is_col_stoch:
+            print(f"Topology {i+1}: COLUMN Stochastic only (Unstable for standard consensus)")
+        else:
+            print(f"Topology {i+1}: NOT Stochastic")
+            
+    print("-------------------------------")
+    return
+
+def sufficient_condition_consensus(matrices):
+    for i, Q in enumerate(matrices):
+        eigenvalues = np.linalg.eigvals(Q)
+        abs_eigenvalues = np.abs(eigenvalues)
+        # Ordina in modo decrescente (dal più grande al più piccolo)
+        # [::-1] serve a invertire l'array sortato (che di base è crescente)
+        sorted_evals = np.sort(abs_eigenvalues)[::-1]
+        # Estrarre i due più grandi
+        lambda_1 = sorted_evals[0]
+        lambda_2 = sorted_evals[1]
+        
+        print(f"\nTopologia {i+1}:")
+        print(f"   -> 1° Autovalore (|λ1|): {lambda_1:.6f} (Dovrebbe essere 1.0)")
+        print(f"   -> 2° Autovalore (|λ2|): {lambda_2:.6f}")
+        
+        # Check if there is sufficient condition for convergence λ1 = 1 && |λ1|>|λ2|>=...>=|λq|
+        if np.allclose(lambda_1, 1):
+            print("THE SYSTEM CONVERGES")
+        else:
+            print("THE SYSTEM DOES NOT CONVERGE")
+            return
+
+        # Check Row Stochastic
+        # axis=1 somma lungo le righe
+        row_sums = np.sum(Q, axis=1)
+        is_row_stoch = np.allclose(row_sums, 1) # Usa allclose per evitare errori di arrotondamento float
+        
+        # Check Column Stochastic
+        # axis=0 somma lungo le colonne
+        col_sums = np.sum(Q, axis=0)
+        is_col_stoch = np.allclose(col_sums, 1)
+        
+        # Q characteristic
+        if is_row_stoch and is_col_stoch:
+            print(f"Topology {i+1}: DOUBLY Stochastic (Converges to Average)")
+        elif is_row_stoch:
+            print(f"Topology {i+1}: ROW Stochastic only (Converges to Weighted Value)")
+        elif is_col_stoch:
+            print(f"Topology {i+1}: COLUMN Stochastic only (Unstable for standard consensus)")
+        else:
+            print(f"Topology {i+1}: NOT Stochastic")
+
+        # Convergence rate
+        rho = lambda_2
+        
+        if np.isclose(rho, 1.0):
+            print("   -> THE SYSTEM DOES NOT CONVERGE")
+        elif rho > 0.9:
+            print(f"   -> SLOW CONVERGENCE (Rate: {rho:.4f}).")
+        elif rho < 0.5:
+             print(f"   -> FAST CONVERGENCE (Rate: {rho:.4f}).")
+        else:
+             print(f"   -> MODERATE CONVERGENCE (Rate: {rho:.4f}).")
+        print("\n--------------------------------------------------")
+    return
+
+def DISTA(n, q, D, y, Q, tau, lam_vec, max_iter=1000, tol=1e-8):
+    """
+    Implements the Distributed ISTA (DISTA) algorithm (Algorithm 3).
+    
+    Returns:
+        z_nodes (np.array): Final estimates matrix (q x (n+q)).
+        k (int): The iteration number where convergence was reached.
+    """
+    
+    # 1. Initialization
+    z_nodes = np.zeros((q, n + q)) 
+    
+    # Pre-compute local augmented matrices G_i
+    G_list = []
+    for i in range(q):
+        e_i = np.zeros(q)
+        e_i[i] = 1 
+        G_i = np.hstack((D[i, :], e_i)) 
+        G_list.append(G_i)
+
+    print(f"   -> Starting DISTA (Max Iter: {max_iter})...")
+
+    # 2. Main Loop
+    for k in range(max_iter):
+        z_prev = np.copy(z_nodes)
+        z_new = np.zeros_like(z_nodes)
+        
+        # Consensus Step (Matrix Multiplication for efficiency)
+        consensus_block = np.dot(Q, z_prev) 
+
+        # Local Update Loop
+        for i in range(q):
+            G_i = G_list[i]
+            y_i = y[i]
+            z_i_k = z_prev[i, :]
+            
+            # --- CORREZIONE GRADIENTE (Fix Shape Mismatch) ---
+            # Calcolo residuo scalare
+            residual = y_i - np.dot(G_i, z_i_k)
+            
+            # Moltiplicazione scalare per il vettore G_i
+            gradient_correction = tau * G_i * residual
+            # -------------------------------------------------
+            
+            # Combine
+            v = consensus_block[i, :] + gradient_correction
+            
+            # Soft Thresholding
+            z_new[i, :] = IST(v, tau * lam_vec)
+            
+        # Stop Criterion
+        diff_norm = np.sum([np.linalg.norm(z_new[i] - z_prev[i],2) for i in range(q)])
+        
+        # --- CORREZIONE RETURN (Fix Unpack Error) ---
+        if diff_norm < tol:
+            return z_new, k # Restituisce DUE valori se converge
+        
+        z_nodes = z_new
+        
+        if k > 0 and k % 5000 == 0:
+            print(f"      Iter {k}: Diff Norm {diff_norm:.2e}")
+            
+    return z_nodes, max_iter # Restituisce DUE valori se finisce i cicli
 
 ############################### TASK 1 ##################################################
 def task_1():
@@ -342,7 +623,6 @@ def task_1():
     axs[2].grid()
     plt.show()
 
-
 ############################### TASK 2 ##################################################
 def task_2():
     runs=1000
@@ -403,7 +683,6 @@ def task_2():
     plt.title("AWARE - NOISY | Estimation accuracy in function of the number of runs")
     plt.grid()
     plt.show()
-
 
 ############################### TASK 3 ##################################################
 # Regarding the estimated state vector, our results indicated the need for refinement, as we observed more than three non-zero elements, even though their values were low. In a real-world scenario, knowing the number of targets to localize is feasible, so we selected the top three non-zero elements from the estimated $x$ vector, setting the others to 0. This approach ensured that the estimated support was accurate.
@@ -489,7 +768,6 @@ def task_3():
     plt.gca().set_aspect('equal', adjustable='box')
 
     plt.show()
-
 
 ############################### TASK 4 ##################################################
 def task_4():
@@ -710,7 +988,139 @@ def task_4_optional():
 
 ############################### TASK 5 ##################################################
 def task_5():
+    """
+    Task 5: Distributed target localization under sparse sensor attacks using DISTA.
+    
+    This function:
+    1. Loads distributed data (y, D, Q matrices).
+    2. Analyzes the connectivity of the provided network topologies (Eigenvalues).
+    3. Solves the localization problem using the Distributed ISTA (DISTA) algorithm.
+    4. Refines the attack vector estimation.
+    5. Plots the results for a selected valid topology.
+    """
+    np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
+    cwd = os.getcwd()
+    
+    # Load Data
+    mat = sio.loadmat(cwd + r'/utils/distributed_localization_data.mat')
+    # IMPORTANT: Squeeze y to make it shape (25,) instead of (25,1)
+    y = np.squeeze(mat['y']) 
+    D = mat['D']
+    
+    # Load Topologies
+    Q12 = mat['Q_12']
+    Q18 = mat['Q_18']
+    Q4 = mat['Q_4']
+    Q8 = mat['Q_8']
+    
+    matrices_list = [Q4, Q8, Q12, Q18] 
+    topo_names = ["Topology 1 (Q4)", "Topology 2 (Q8)", "Topology 3 (Q12)", "Topology 4 (Q18)"]
 
+    n = D.shape[1] 
+    q = D.shape[0] 
+
+    # Sensor Coordinates
+    sensor_coords = np.array([
+        [80,  750],[100,  345],[70, 170],[190, 930],[170, 30],[240, 320],[260, 360],[260, 460],[350, 700],[370, 410],
+        [400, 950],[330, 640],[410, 650],[550, 20],[620, 750],[760, 760],[650,  10],[660, 230],[710, 195],[870, 650],
+        [920, 950],[930, 610],[960, 190],[970, 260],[970, 980]
+    ])
+    
+    # Ground Truth Indices (0-based)
+    # Based on text solution: supp(x)={14,25} -> [13, 24]
+    # Based on text solution: supp(a)={8,23}  -> [7, 22]
+    true_target_indices = [13, 24]
+    true_attack_indices = [7, 22]
+
+    # Parameters
+    tau = 4e-7
+    lam_vec = np.concatenate((np.full(n, 10), np.full(q, 0.1)))
+    attack_threshold = 0.002
+    
+    # --- LOOP OVER ALL TOPOLOGIES ---
+    print("\n================ STARTING SIMULATION FOR ALL TOPOLOGIES ================")
+    
+    for i, Q_curr in enumerate(matrices_list):
+        print(f"\n--- Testing {topo_names[i]} ---")
+        
+        # 1. Analyze Eigenvalues
+        evals = np.abs(np.linalg.eigvals(Q_curr))
+        lambda_2 = np.sort(evals)[::-1][1]
+        print(f"   |lambda_2|: {lambda_2:.5f} (Convergence Rate)")
+        
+        # 2. Run DISTA
+        z_nodes, converged_iter = DISTA(n, q, D, y, Q_curr, tau, lam_vec, max_iter=15000)
+        
+        if converged_iter < 15000:
+            print(f"CONVERGED at iteration: {converged_iter}")
+        else:
+            print(f"Reached MAX ITERATIONS ({converged_iter}) without full convergence.")
+
+        # 3. Consensus & Refinement
+        z_final = np.mean(z_nodes, axis=0)
+        x_est = z_final[:n]
+        a_est = z_final[n:]
+        
+        # Refinement
+        a_est_refined = np.copy(a_est)
+        a_est_refined[np.abs(a_est_refined) < attack_threshold] = 0
+        
+        # Extract Indices
+        est_targets = np.argsort(x_est)[-2:]
+        est_attacks = np.where(a_est_refined != 0)[0]
+
+        # Extract Values for Attacks
+        est_attack_values = a_est_refined[est_attacks]
+        
+        print(f"   Estimated Targets: {est_targets} (True: {true_target_indices})")
+        print(f"   Estimated Attacks: {est_attacks} (True: {true_attack_indices})")
+        if len(est_attacks) > 0:
+            print("   Estimated Attack Values:")
+            for idx, val in zip(est_attacks, est_attack_values):
+                print(f"      -> Sensor {idx}: {val:.4f}")
+            else:
+                print("      -> No attacks detected.")
+        # ---------------------------------------------
+        
+        # 4. Plotting (Separate Figure for each)
+        H, L, W = 10, 10, 100 
+        room_grid = np.zeros((2, n))
+        for k in range(n):
+            room_grid[0, k] = W//2 + (k % L) * W
+            room_grid[1, k] = W//2 + (k // L) * W
+
+        plt.figure(i, figsize=(7, 7))
+        plt.grid(True)
+        plt.title(f"{topo_names[i]}\nConverged at iter: {converged_iter}")
+
+        # True targets
+        plt.plot(room_grid[0, true_target_indices], room_grid[1, true_target_indices], 's', markersize=9, 
+                markeredgecolor=np.array([40, 208, 220])/255, 
+                markerfacecolor=np.array([40, 208, 220])/255, label='True Targets')    
+        
+        # Estimated targets
+        plt.plot(room_grid[0, est_targets], room_grid[1, est_targets], 'x', markersize=9, 
+                markeredgecolor=np.array([255, 0, 0])/255, 
+                markerfacecolor=np.array([255, 255, 255])/255, label='Est. Targets')
+
+        # Sensors
+        plt.scatter(sensor_coords[:, 0], sensor_coords[:, 1], s=50, c='pink', alpha=0.5, label='Sensors')
+        
+        # Attacked sensors
+        if len(est_attacks) > 0:
+            # Plot first one with label
+            plt.plot(sensor_coords[est_attacks[0], 0], sensor_coords[est_attacks[0], 1], 'o', markersize=12, 
+                    markeredgecolor=np.array([255, 0, 0])/255, markerfacecolor='none', label='Attacked')
+            # Plot others
+            for idx in est_attacks[1:]:
+                plt.plot(sensor_coords[idx, 0], sensor_coords[idx, 1], 'o', markersize=12, 
+                        markeredgecolor=np.array([255, 0, 0])/255, markerfacecolor='none')
+
+        plt.axis([0, 1000, 0, 1000])
+        plt.legend(loc='upper right', fontsize='small')
+        plt.gca().set_aspect('equal', adjustable='box')
+        
+    plt.show()
     return
 
 if __name__ == "__main__":
