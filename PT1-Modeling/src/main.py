@@ -1,7 +1,7 @@
 import os as os
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import ISTA, IST
+from utils import ISTA, IST, ISTA_task_5
 import scipy.io as sio
 from scipy import stats
 import networkx as nx
@@ -333,6 +333,142 @@ def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indice
             print(f"      Iter {k}: Diff Norm {diff_norm:.2e}")
             
     return z_nodes, max_iter, x_accuracy_list_main, a_accuracy_list_main # Return value if does not converge
+
+def Localization_with_attacks_task_5(n, q, G, tau, lam, y, true_location_targets, true_attack_indices):
+    # Creazione vettore Lambda pesato (Stato: 10, Attacchi: 20)
+    lam_weights = np.concatenate((np.full(n, 10), np.full(q, 0.1)))
+    final_lam = lam * lam_weights
+
+    x_true = np.zeros(n)
+    for i in true_location_targets: x_true[i]=1
+
+    a_true = np.zeros(q)
+    for i in true_attack_indices: a_true[i]=1
+    
+    # Inizializzazione
+    w = np.zeros(n + q)
+    
+    # Chiamata a ISTA (Firma originale rispettata)
+    w_estimated, w_estimated_supp, iterations, history = ISTA_task_5(w, G, tau, final_lam, y)
+    
+    # --- POST-PROCESSING ACCURACY ---
+    # Ora calcoliamo l'errore per ogni passo salvato nello storico
+    x_acc_hist = []
+    a_acc_hist = []
+    
+    for w_step in history:
+        # Estrai parte stato (x) e parte attacchi (a)
+        x_est = w_step[:n]
+        a_est = w_step[n:]
+        
+        # Calcola errore norma L2
+        x_acc_hist.append(np.linalg.norm(x_est - x_true, 2))
+        a_acc_hist.append(np.linalg.norm(a_est - a_true, 2)) # Proxy o confronta con a_true se disponibile
+
+    return w_estimated, w_estimated_supp, iterations, x_acc_hist, a_acc_hist
+
+def compare_accuracy_distributed_centralized_task_5():
+    print("\n========================================================================")
+    print("      AVVIO COMPARAZIONE ACCURACY SISTEMA DISTRIBUITO vs CENTRALIZZATO")
+    print("========================================================================\n")
+
+    # 1. Ottieni dati Distributi (chiama la funzione che abbiamo corretto prima)
+    # Nota: task_5 mostrerà i suoi grafici. Chiudili per far proseguire il codice.
+    print("1. Esecuzione Distributed (Task 5)...")
+    dist_x_curves, dist_a_curves, top_names = task_5()
+
+    # 2. Ottieni dati Centralizzati
+    print("2. Esecuzione Centralized...")
+    cent_x_curve, cent_a_curve = task_5_centralized() # O il nome della tua funzione
+
+    print("\nGenerazione Grafici Finali Comparativi...")
+    
+    colors = ['b', 'g', 'r', 'm'] 
+    cent_color = 'k' # Nero per il centralizzato
+    
+    # -------------------------------------------------------
+    # PLOT 1: STATE ACCURACY (Targets) - Confronto Completo
+    # -------------------------------------------------------
+    plt.figure(figsize=(12, 7))
+    
+    # Aggiungiamo la curva centralizzata alla lista per calcolare la lunghezza massima
+    all_curves_x = dist_x_curves + [cent_x_curve]
+    max_len_x = max(len(c) for c in all_curves_x)
+
+    # A. Plotta le curve Distribuite
+    for i, acc_curve in enumerate(dist_x_curves):
+        # Qui acc_curve è GIÀ un vettore 1D (media fatta in task_5)
+        # Quindi facciamo solo padding
+        current_len = len(acc_curve)
+        pad_width = max_len_x - current_len
+        
+        if pad_width > 0:
+            padded_acc = np.pad(acc_curve, (0, pad_width), mode='edge')
+        else:
+            padded_acc = acc_curve
+            
+        plt.plot(padded_acc, label=f"Dist. {top_names[i]}", color=colors[i % len(colors)], linewidth=1.5, alpha=0.7)
+        plt.plot(current_len-1, acc_curve[-1], 'o', color=colors[i % len(colors)], alpha=0.6)
+
+    # B. Plotta la curva Centralizzata
+    curr_len_c = len(cent_x_curve)
+    pad_width_c = max_len_x - curr_len_c
+    if pad_width_c > 0:
+        padded_cent = np.pad(cent_x_curve, (0, pad_width_c), mode='edge')
+    else:
+        padded_cent = cent_x_curve
+
+    plt.plot(padded_cent, label="Centralized (Fusion Center)", color=cent_color, linewidth=3, linestyle='--')
+    plt.plot(curr_len_c-1, cent_x_curve[-1], 'D', color=cent_color, markersize=8)
+
+    plt.title('GRAND FINAL: State Accuracy (Distributed vs Centralized)')
+    plt.xlabel('Iterations')
+    plt.ylabel('Error (L2 Norm)') 
+    plt.legend()
+    plt.grid(True, which="both", ls="-", alpha=0.5)
+    plt.tight_layout()
+
+
+    # -------------------------------------------------------
+    # PLOT 2: ATTACK ACCURACY - Confronto Completo
+    # -------------------------------------------------------
+    plt.figure(figsize=(12, 7))
+    
+    all_curves_a = dist_a_curves + [cent_a_curve]
+    max_len_a = max(len(c) for c in all_curves_a)
+
+    # A. Plotta le curve Distribuite
+    for i, acc_curve in enumerate(dist_a_curves):
+        current_len = len(acc_curve)
+        pad_width = max_len_a - current_len
+        
+        if pad_width > 0:
+            padded_acc = np.pad(acc_curve, (0, pad_width), mode='edge')
+        else:
+            padded_acc = acc_curve
+            
+        plt.plot(padded_acc, label=f"Dist. {top_names[i]}", color=colors[i % len(colors)], linewidth=1.5, alpha=0.7)
+        plt.plot(current_len-1, acc_curve[-1], 'o', color=colors[i % len(colors)], alpha=0.6)
+
+    # B. Plotta la curva Centralizzata
+    curr_len_c = len(cent_a_curve)
+    pad_width_c = max_len_a - curr_len_c
+    if pad_width_c > 0:
+        padded_cent = np.pad(cent_a_curve, (0, pad_width_c), mode='edge')
+    else:
+        padded_cent = cent_a_curve
+
+    plt.plot(padded_cent, label="Centralized (Fusion Center)", color=cent_color, linewidth=3, linestyle='--')
+    plt.plot(curr_len_c-1, cent_a_curve[-1], 'D', color=cent_color, markersize=8)
+
+    plt.title('GRAND FINAL: Attack Accuracy (Distributed vs Centralized)')
+    plt.xlabel('Iterations')
+    plt.ylabel('Error (L2 Norm)') 
+    plt.legend()
+    plt.grid(True, which="both", ls="-", alpha=0.5)
+    plt.tight_layout()
+
+    plt.show()
 
 ############################### TASK 1 ##################################################
 def task_1():
@@ -969,9 +1105,6 @@ def task_5():
     tau = 4e-7
     lam_vec = np.concatenate((np.full(n, 10), np.full(q, 0.1)))
     attack_threshold = 0.002
-
-    x_true = np.zeros(n)
-    for i in true_location: x_true[i]=1
     
     # List to store accuracy curves for final comparison
     x_all_topologies_accuracy = []
@@ -1141,8 +1274,134 @@ def task_5():
     plt.tight_layout()
     plt.show() # Show the second plot
 
-    return
+    return x_all_topologies_accuracy, a_all_topologies_accuracy, topologies_names
 
+############################### TASK 5 CENTRALIZED ##################################################
+def task_5_centralized():
+    np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
+    cwd = os.getcwd()
+    
+    # Load Data
+    mat = sio.loadmat(cwd + r'/utils/distributed_localization_data.mat')
+    y = np.squeeze(mat['y']) 
+    D = mat['D']
+    
+    n = D.shape[1] 
+    q = D.shape[0] 
+
+    # Costruzione matrice globale G (o C) = [D | I]
+    G = np.hstack((D, np.eye(q)))
+
+    sensor_coords = np.array([
+        [80,  750],[100,  345],[70, 170],[190, 930],[170, 30],[240, 320],[260, 360],[260, 460],[350, 700],[370, 410],
+        [400, 950],[330, 640],[410, 650],[550, 20],[620, 750],[760, 760],[650,  10],[660, 230],[710, 195],[870, 650],
+        [920, 950],[930, 610],[960, 190],[970, 260],[970, 980]
+    ])
+    
+    true_location = [13, 24]
+    true_attack_indices = [7, 22]
+    
+    # Parameters
+    attack_threshold = 0.002
+    
+    # # Calcolo Tau Ottimale (Lipschitz)
+    # print("Calculating optimal Tau...")
+    # L_max = np.max(np.linalg.eigvalsh(np.dot(G.T, G)))
+    # tau = 0.95 / L_max 
+    # print(f"Tau: {tau:.4e}")
+
+    # tau = 4e-7
+    tau = 4e-8
+    # tau = 1 / (np.linalg.norm(G, ord=2)**2) - 10**(-8)
+
+    # Scalar lambda base (verrà espanso dentro Localization_with_attacks)
+    lam_scalar = 1.0 
+
+    print("--- Running Centralized ISTA ---")
+    
+    # ESECUZIONE TRAMITE IL WRAPPER
+    z_est, support, stop_iter, x_acc_hist, a_acc_hist = Localization_with_attacks_task_5(n, q, G, tau, lam_scalar, y, true_location, true_attack_indices)
+
+    print(f"Finished. Converged at iteration: {stop_iter}")
+
+    # Separazione Risultati
+    x_est = z_est[:n]
+    a_est = z_est[n:]
+    
+    a_est_refined = np.copy(a_est)
+    a_est_refined[np.abs(a_est_refined) < attack_threshold] = 0
+    
+    est_targets = np.argsort(x_est)[-2:]
+    est_attacks = np.where(a_est_refined != 0)[0]
+    est_attack_values = a_est_refined[est_attacks]
+    
+    print(f"   Estimated Targets: {est_targets} (True: {true_location})")
+    print(f"   Estimated Attacks: {est_attacks} (True: {true_attack_indices})")
+    
+    print('\n --------------------------------------------------- \n')
+    print("Generating Plots...")
+
+    # --- PLOTTING ---
+    
+    # 1. Spatial Plot
+    H, L, W = 10, 10, 100 
+    room_grid = np.zeros((2, n))
+    for k in range(n):
+        room_grid[0, k] = W//2 + (k % L) * W
+        room_grid[1, k] = W//2 + (k // L) * W
+
+    plt.figure(figsize=(7, 7))
+    plt.grid(True)
+    plt.title(f"Centralized ISTA Result\nStopped at iter: {stop_iter}")
+
+    plt.plot(room_grid[0, true_location], room_grid[1, true_location], 's', markersize=9, 
+            markeredgecolor=np.array([40, 208, 220])/255, 
+            markerfacecolor=np.array([40, 208, 220])/255, label='True Targets')    
+    
+    plt.plot(room_grid[0, est_targets], room_grid[1, est_targets], 'x', markersize=9, 
+            markeredgecolor=np.array([255, 0, 0])/255, 
+            markerfacecolor=np.array([255, 255, 255])/255, label='Est. Targets')
+
+    plt.scatter(sensor_coords[:, 0], sensor_coords[:, 1], s=50, c='pink', alpha=0.5, label='Sensors')
+    
+    if len(est_attacks) > 0:
+        plt.plot(sensor_coords[est_attacks[0], 0], sensor_coords[est_attacks[0], 1], 'o', markersize=12, 
+                markeredgecolor=np.array([255, 0, 0])/255, markerfacecolor='none', label='Attacked')
+        for idx in est_attacks[1:]:
+            plt.plot(sensor_coords[idx, 0], sensor_coords[idx, 1], 'o', markersize=12, 
+                    markeredgecolor=np.array([255, 0, 0])/255, markerfacecolor='none')
+
+    plt.axis([0, 1000, 0, 1000])
+    plt.legend(loc='upper right', fontsize='small')
+    plt.gca().set_aspect('equal', adjustable='box')
+
+    # 2. State Accuracy Plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(x_acc_hist, label='Centralized ISTA', color='b', linewidth=2)
+    plt.plot(len(x_acc_hist)-1, x_acc_hist[-1], 'o', color='b')
+    
+    plt.title('State Accuracy Convergence (Centralized)')
+    plt.xlabel('Iterations')
+    plt.ylabel('Error (L2 Norm)') 
+    plt.legend()
+    plt.grid(True, which="both", ls="-", alpha=0.5)
+    plt.tight_layout()
+
+    # 3. Attack Accuracy Plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(a_acc_hist, label='Attack Vector Norm', color='r', linewidth=2)
+    plt.plot(len(a_acc_hist)-1, a_acc_hist[-1], 'o', color='r')
+    
+    plt.title('Attack Vector Convergence (Centralized)')
+    plt.xlabel('Iterations')
+    plt.ylabel('Norm (L2)') 
+    plt.legend()
+    plt.grid(True, which="both", ls="-", alpha=0.5)
+    plt.tight_layout()
+
+    plt.show()
+
+    return x_acc_hist, a_acc_hist
 
 if __name__ == "__main__":
     # task_1()
@@ -1151,3 +1410,5 @@ if __name__ == "__main__":
     # task_4()
     # task_4_optional()
     task_5()
+    # task_5_centralized()
+    # compare_accuracy_distributed_centralized_task_5()
