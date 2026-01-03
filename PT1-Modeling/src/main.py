@@ -269,6 +269,11 @@ def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indice
     a_true = np.zeros(q)
     for i in true_attack_indices: a_true[i]=1
     a_accuracy_list_main = []
+
+    k_x_consensus = -1; flag_x_cons = False
+    k_a_consensus = -1; flag_a_cons = False
+    k_x_conver = -1; flag_x_conv = False
+    k_a_conver = -1; flag_a_conv = False
     
     # Pre-compute local augmented matrices G_i
     G_list = []
@@ -322,17 +327,66 @@ def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indice
 
         # Stop Criterion
         diff_norm = np.sum([np.linalg.norm(z_new[i] - z_prev[i],2)**2 for i in range(q)])
+
+        if not (flag_x_conv and flag_a_conv):
+            x_is_cons, a_is_cons, x_idxs, a_idxs = check_support_consensus(z_new, n, k_elements=2)
+            # --- Logica per X ---
+            if x_is_cons:
+                # Se è la prima volta che c'è consenso, salva iterazione
+                if not flag_x_cons:
+                    k_x_consensus = k
+                    flag_x_cons = True
+                # Se c'è consenso, controlliamo se è GIUSTO (Convergenza)
+                if not flag_x_conv:
+                    if np.array_equal(x_idxs, true_location_targets):
+                        k_x_conver = k
+                        flag_x_conv = True
+            # --- Logica per A ---
+            if a_is_cons:
+                if not flag_a_cons:
+                    k_a_consensus = k
+                    flag_a_cons = True
+                if not flag_a_conv:
+                    if np.array_equal(a_idxs, true_attack_indices):
+                        k_a_conver = k
+                        flag_a_conv = True
         
         # --- CORREZIONE RETURN (Fix Unpack Error) ---
         if diff_norm < tol:
-            return z_new, k, x_accuracy_list_main, a_accuracy_list_main # Return values if converge
+            return z_new, k, x_accuracy_list_main, a_accuracy_list_main, k_x_consensus, k_a_consensus, k_x_conver, k_a_conver # Return values if converge
         
         z_nodes = z_new
         
         if k > 0 and k % 5000 == 0:
             print(f"      Iter {k}: Diff Norm {diff_norm:.2e}")
             
-    return z_nodes, max_iter, x_accuracy_list_main, a_accuracy_list_main # Return value if does not converge
+    return z_nodes, max_iter, x_accuracy_list_main, a_accuracy_list_main, k_x_consensus, k_a_consensus, k_x_conver, k_a_conver # Return value if does not converge
+
+def check_support_consensus(z_nodes, n_state, k_elements=2):
+    """
+    Verifica se tutti i nodi hanno lo stesso supporto (indici dei valori maggiori).
+    Restituisce anche QUALI sono questi indici per verificare la convergenza vera.
+    """
+    # 1. Split x (Stato) e a (Attacchi)
+    x_estimates = z_nodes[:, :n_state] 
+    a_estimates = z_nodes[:, n_state:] 
+
+    # 2. Trova indici dei k valori maggiori
+    x_est_idx = np.argsort(np.abs(x_estimates), axis=1)[:, -k_elements:]
+    a_est_idx = np.argsort(np.abs(a_estimates), axis=1)[:, -k_elements:] # Nota: usa np.abs()!
+
+    # 3. Ordina per confronto riga per riga
+    x_est_idx = np.sort(x_est_idx, axis=1)
+    a_est_idx = np.sort(a_est_idx, axis=1)
+
+    # 4. Confronta tutto con il primo nodo
+    x_first = x_est_idx[0]
+    a_first = a_est_idx[0]
+    
+    x_cons = np.all(x_est_idx == x_first)
+    a_cons = np.all(a_est_idx == a_first)
+
+    return x_cons, a_cons, x_first, a_first
 
 def Localization_with_attacks_task_5(n, q, G, tau, lam, y, true_location_targets, true_attack_indices):
     # Creazione vettore Lambda pesato (Stato: 10, Attacchi: 20)
@@ -1112,22 +1166,30 @@ def task_5():
 
     # --- LOOP OVER ALL TOPOLOGIES ---
     for i, Q_curr in enumerate(matrices_list):
-        print(f"--- Testing {topologies_names[i]} ---")
+        print(f"--- {topologies_names[i]} ---")
         
         # Eigenvalue analysis
         evals = np.abs(np.linalg.eigvals(Q_curr))
         lambda_2 = np.sort(evals)[::-1][1]
         print(f"   |lambda_2|: {lambda_2:.5f}")
         iterations = 15000
+        consensus_reached_iteration = 0
 
         # Run DISTA
-        z_nodes, stop_criteria_iter, x_accuracy, a_accuracy = DISTA(n, q, D, y, Q_curr, tau, lam_vec, true_location, true_attack_indices, max_iter=iterations)
+        z_nodes, stop_criteria_iter, x_accuracy, a_accuracy, k_x_cons, k_a_cons, k_x_conv, k_a_conv = DISTA(n, q, D, y, Q_curr, tau, lam_vec, true_location, true_attack_indices, max_iter=iterations)
         
-        # Check if the consensus algorithm converged
+        print("\n--- Performance Metrics ---")
+        print(f"X Consensus (k_x_cons)   : {k_x_cons if k_x_cons != -1 else 'Not Reached'}")
+        print(f"A Consensus (k_a_cons)   : {k_a_cons if k_a_cons != -1 else 'Not Reached'}")
+        print(f"X Converged (k_x_conv)   : {k_x_conv if k_x_conv != -1 else 'Not Reached'}")
+        print(f"A Converged (k_a_conv)   : {k_a_conv if k_a_conv != -1 else 'Not Reached'}")
+        # Check if the consensus algorithm reached stop condition
         if stop_criteria_iter < iterations:
             print(f"Reached stop criteria at iteration: {stop_criteria_iter}")
         else:
             print(f"Reached MAX ITERATIONS ({stop_criteria_iter}) without reach stop criteria")
+
+        print("\n")
 
         z_final = np.mean(z_nodes, axis=0)
         x_est = z_final[:n]
@@ -1303,12 +1365,6 @@ def task_5_centralized():
     
     # Parameters
     attack_threshold = 0.002
-    
-    # # Calcolo Tau Ottimale (Lipschitz)
-    # print("Calculating optimal Tau...")
-    # L_max = np.max(np.linalg.eigvalsh(np.dot(G.T, G)))
-    # tau = 0.95 / L_max 
-    # print(f"Tau: {tau:.4e}")
 
     # tau = 4e-7
     tau = 4e-8
