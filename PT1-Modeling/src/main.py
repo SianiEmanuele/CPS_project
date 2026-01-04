@@ -712,7 +712,7 @@ def task_4():
     G = stats.zscore(G, axis=0)
 
     true_location = []
-    true_location.append([22,35,86])
+    true_location.append([21,34,85])
 
     tau = 1 / (np.linalg.norm(G, ord=2)**2) - 10**(-8)
     lam = 1
@@ -754,9 +754,9 @@ def task_4_optional():
         x_true[i+1,:] = np.dot(A, x_true[i,:])
 
     x_hat_unaware, a_hat_unaware = observer(n, q, A, G, tau, lam, y, K)
-    x_conv, a_conv, state_convergence_iteration, attacks_convergence_iteration = check_convergence(x_hat_unaware, a_hat_unaware, x_true, attacked_sensors, n_targets=3, n_attacks=2)
-    print(f'x_conv: {x_conv}, state_convergence_iteration: {state_convergence_iteration}')
-    print(f'a_conv: {a_conv}, attacks_convergence_iteration: {attacks_convergence_iteration}')
+    # x_conv, a_conv, state_convergence_iteration, attacks_convergence_iteration = check_convergence(x_hat_unaware, a_hat_unaware, x_true, attacked_sensors, targets=3, attacks=2)
+    # print(f'x_conv: {x_conv}, state_convergence_iteration: {state_convergence_iteration}')
+    # print(f'a_conv: {a_conv}, attacks_convergence_iteration: {attacks_convergence_iteration}')
     tracking_plot(n, true_location, x_hat_unaware, a_hat_unaware, sensor_coords, title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
     plt.show()
 
@@ -777,16 +777,6 @@ def task_4_optional():
     print('\n===== OPTIONAL TASK PART 1 =====')
     # Create the vector of measurement corrupted with attacks
     y = np.zeros((q, K))
-    x_true = np.zeros((K,n))
-    true_location = []
-    true_location.append([22, 35, 86])
-
-    # Set the ground truth state vector
-    for loc in true_location:
-        x_true[0, loc] = 1
-    # Simulate the dynamics of the targets for the entire duration K
-    for i in range(K - 1):
-        x_true[i + 1, :] = np.dot(A, x_true[i, :])
 
     for i in range(K):
         # Calculate the "clean" measurements
@@ -799,9 +789,9 @@ def task_4_optional():
 
     x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
 
-    x_conv_1, a_conv_1, state_convergence_iteration_1, attacks_convergence_iteration_1 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, targets=3, attacks=2)
-    print(f'x_conv: {x_conv_1}, state_convergence_iteration: {state_convergence_iteration_1}')
-    print(f'x_conv: {a_conv_1}, state_convergence_iteration: {attacks_convergence_iteration_1}')
+    # x_conv_1, a_conv_1, state_convergence_iteration_1, attacks_convergence_iteration_1 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, targets=3, attacks=2)
+    # print(f'x_conv: {x_conv_1}, state_convergence_iteration: {state_convergence_iteration_1}')
+    # print(f'x_conv: {a_conv_1}, state_convergence_iteration: {attacks_convergence_iteration_1}')
     tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
     plt.show()
 
@@ -819,9 +809,9 @@ def task_4_optional():
         y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
 
     x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
-    x_conv_2, a_conv_2, state_convergence_iteration_2, attacks_convergence_iteration_2 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, targets=3, attacks=2)
-    print(f'x_conv: {x_conv_2}, state_convergence_iteration: {state_convergence_iteration_2}')
-    print(f'x_conv: {a_conv_2}, state_convergence_iteration: {attacks_convergence_iteration_2}')
+    # x_conv_2, a_conv_2, state_convergence_iteration_2, attacks_convergence_iteration_2 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, targets=3, attacks=2)
+    # print(f'x_conv: {x_conv_2}, state_convergence_iteration: {state_convergence_iteration_2}')
+    # print(f'x_conv: {a_conv_2}, state_convergence_iteration: {attacks_convergence_iteration_2}')
     # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='OPTIONAL TASK PART 2')
     # plt.show()
 
@@ -955,6 +945,6 @@ if __name__ == "__main__":
     # task_1()
     # task_2()
     # task_3()
-    # task_4()
-    task_4_optional()
+    task_4()
+    # task_4_optional()
     # task_5()
