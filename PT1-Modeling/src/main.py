@@ -1,6 +1,10 @@
 import os as os
+from cProfile import label
+
 import numpy as np
 import matplotlib.pyplot as plt
+from kornia.augmentation.auto.autoaugment.ops import color
+
 from utils import ISTA, IST, ISTA_task_5, localization_plot, tracking_plot
 import scipy.io as sio
 from scipy import stats
@@ -441,9 +445,8 @@ def task_1():
 
     print("             QUESTION 1\n- Support recovery rate: how many times the support of x_tilda is correctly estimated?")
     correct_estimations, num_iterations, _ = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
-    print("The support of x_tilda is correctly estimated in ", correct_estimations, " out of", runs ," runs" , 
+    print("The support of x_tilda is correctly estimated in ", correct_estimations, " out of", runs ," runs" ,
             "\nMin iterations = ", min(num_iterations), " || Max iterations = ", max(num_iterations), " || Mean Iterations = ", np.mean(num_iterations), "\n")
-
     ##################################### QUESTION 2 ##############################################################
     q_list = range(10, 51)
     correct_estimations_percentage = []
@@ -451,9 +454,7 @@ def task_1():
     min_iterations = []
     mean_iterations = []
     print("             QUESTION 2\n- Can we obtain 100% of success in the support recovery by increasing q?\n")
-    
-    # Simulation 
-
+    # Simulation
     for q in q_list:
         C = np.random.randn(q, p)
         C_l_2_norm = np.linalg.norm(C, ord=2)
@@ -464,7 +465,6 @@ def task_1():
         max_iterations.append(np.max(num_iterations))
         min_iterations.append(np.min(num_iterations))
         mean_iterations.append(np.mean(num_iterations))
-
     #plotting correct estimations percentage
     plt.plot(q_list, correct_estimations_percentage)
     plt.xlabel("q")
@@ -472,7 +472,6 @@ def task_1():
     plt.title("Percentage of correct estimations in function of q")
     plt.grid()
     plt.show()
-
     #plotting min, max and mean iterations in 3 different lines
     fig, axs = plt.subplots(3)
     fig.suptitle('Iterations in function of q')
@@ -498,78 +497,47 @@ def task_1():
     
     ##### q = 10 ######
     q = 10
-    tau_list = [] 
+    tau_list = []
+    C = np.random.randn(q, p)
+    C_l_2_norm = np.linalg.norm(C, ord=2)
     for i in range (0, 10):
         tau_list.append(1 / (C_l_2_norm**2) - 10**(-8) - i * 10**(-3))
-    correct_estimations_percentage_q_10 = []
-    max_iterations_q_10 = []
-    min_iterations_q_10 = []
-    mean_iterations_q_10 = []
+    correct_estimations_percentage = []
+    max_iterations = []
+    min_iterations = []
+    mean_iterations = []
 
     for tau in tau_list:
-        C = np.random.randn(q, p)
-        C_l_2_norm = np.linalg.norm(C, ord=2)
-        print(tau)
-        lam = 1 / (100*tau)
+        lam = 1 / (100 * tau)
         correct_estimations, num_iterations, _ = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
-        correct_estimations_percentage_q_10.append(correct_estimations*100/runs)
-        max_iterations_q_10.append(np.max(num_iterations))
-        min_iterations_q_10.append(np.min(num_iterations))
-        mean_iterations_q_10.append(np.mean(num_iterations))
-        # print("tau = ", tau, "|| The support of x_tilda is correctly estimated in ", correct_estimations, " out of ", runs, " runs" , "\n")
+        correct_estimations_percentage.append(correct_estimations*100/runs)
+        max_iterations.append(np.max(num_iterations))
+        min_iterations.append(np.min(num_iterations))
+        mean_iterations.append(np.mean(num_iterations))
+        print("tau = ", tau, "|| The support of x_tilda is correctly estimated in ", correct_estimations, " out of ", runs, " runs" , "\n")
     
     #plotting correct estimations percentage
+    plt.figure()
+    plt.ylim(0, 100)
     plt.plot(tau_list, correct_estimations_percentage)
+    plt.gca().invert_xaxis()
     plt.xlabel("tau")
     plt.ylabel("Correct estimations percentage")
     plt.title("q = 10 | Percentage of correct estimations in function of tau")
-    plt.show()
-
-    ##### q = 24 ######
-    q = 24
-    correct_estimations_percentage_q_24 = []
-    max_iterations_q_24 = []
-    min_iterations_q_24 = []
-    mean_iterations_q_24 = []
-
-    for tau in tau_list:
-        C = np.random.randn(q, p)
-        C_l_2_norm = np.linalg.norm(C, ord=2)
-        lam = 1 / (100*tau)
-        correct_estimations, num_iterations, _ = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
-        correct_estimations_percentage_q_24.append(correct_estimations*100/runs)
-        max_iterations_q_24.append(np.max(num_iterations))
-        min_iterations_q_24.append(np.min(num_iterations))
-        mean_iterations_q_24.append(np.mean(num_iterations))
-
-    #plotting correct estimations percentage with both q=10 and q=24
-    plt.plot(tau_list, correct_estimations_percentage_q_10, label="q=10", color='r')
-    plt.plot(tau_list, correct_estimations_percentage_q_24, label="q=24", color='b')
-    plt.xlabel("tau")
-    plt.ylabel("Correct estimations percentage")
-    plt.title("q = 24 | Percentage of correct estimations in function of tau")
-    plt.legend()
     plt.grid()
     plt.show()
 
-    #plotting min, max and mean iterations in funcrtion of tau with q=10 and q=24
-    fig, axs = plt.subplots(3, figsize=(7, 10))
-    fig.suptitle('Iterations in function of tau')
-    axs[0].plot(tau_list, min_iterations_q_10, label="q=10", color='r')
-    axs[0].plot(tau_list, min_iterations_q_24, label="q=24", color='b')
-    axs[0].set_title('Min iterations')
-    axs[0].legend()
-    axs[1].plot(tau_list, max_iterations_q_10, label="q=10", color='r')
-    axs[1].plot(tau_list, max_iterations_q_24, label="q=24", color='b')
-    axs[1].legend()
-    axs[1].set_title('Max iterations')
-    axs[2].plot(tau_list, mean_iterations_q_10, label="q=10", color='r')
-    axs[2].plot(tau_list, mean_iterations_q_24, label="q=24", color='b')
-    axs[2].set_title('Mean iterations')
-    axs[2].legend()
-    axs[0].grid()
-    axs[1].grid()
-    axs[2].grid()
+    plt.figure()
+    plt.yscale('log')
+    plt.plot(tau_list, min_iterations, color='b', label="Min")
+    plt.plot(tau_list, max_iterations, color='g', label="Max")
+    plt.plot(tau_list, mean_iterations, color='m', label="Mean")
+    plt.gca().invert_xaxis()
+    plt.xlabel("tau")
+    plt.ylabel("Number of iterations")
+    plt.title("q = 10 | Convergence time in function of tau")
+    plt.legend()
+    plt.grid()
     plt.show()
 
     ##################################### QUESTION 5 ##############################################################
@@ -584,67 +552,44 @@ def task_1():
     tau = 1 / (C_l_2_norm**2) - 10**(-8)
     lam_list = []
     for i in range(0, 10):
-        lam_list.append(1 / (100*tau) - i * 10**(-3))
+        lam_list.append(1 / (100*tau) - i * 10**(-2))
 
-    correct_estimations_percentage_q_10 = []
-    max_iterations_q_10 = []
-    min_iterations_q_10 = []
-    mean_iterations_q_10 = []
-
-    for lam in lam_list:
-        C = np.random.randn(q, p)
-        C_l_2_norm = np.linalg.norm(C, ord=2)
-        correct_estimations, num_iterations, _ = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
-        correct_estimations_percentage_q_10.append(correct_estimations*100/runs)
-        max_iterations_q_10.append(np.max(num_iterations))
-        min_iterations_q_10.append(np.min(num_iterations))
-        mean_iterations_q_10.append(np.mean(num_iterations))
-    
-    q = 24
-
-    correct_estimations_percentage_q_24 = []
-    max_iterations_q_24 = []
-    min_iterations_q_24 = []
-    mean_iterations_q_24 = []
+    correct_estimations_percentage = []
+    max_iterations = []
+    min_iterations = []
+    mean_iterations = []
 
     for lam in lam_list:
-        C = np.random.randn(q, p)
-        C_l_2_norm = np.linalg.norm(C, ord=2)
         correct_estimations, num_iterations, _ = ISTA_runs(runs, p, q, C, tau, lam, sparsity)
-        correct_estimations_percentage_q_24.append(correct_estimations*100/runs)
-        max_iterations_q_24.append(np.max(num_iterations))
-        min_iterations_q_24.append(np.min(num_iterations))
-        mean_iterations_q_24.append(np.mean(num_iterations))
-    
+        correct_estimations_percentage.append(correct_estimations*100/runs)
+        max_iterations.append(np.max(num_iterations))
+        min_iterations.append(np.min(num_iterations))
+        mean_iterations.append(np.mean(num_iterations))
+        print("q=10 | lam = ", lam, "|| The support of x_tilda is correctly estimated in ", correct_estimations, " out of ", runs, " runs" , "\n")
 
-    #plotting correct estimations percentage with both q=10 and q=24
-    plt.plot(lam_list, correct_estimations_percentage_q_10, label="q=10", color='r')
-    plt.plot(lam_list, correct_estimations_percentage_q_24, label="q=24", color='b')
+
+    #plotting correct estimations percentage
+    plt.figure()
+    plt.ylim(0, 100)
+    plt.plot(lam_list, correct_estimations_percentage, color='r')
+    plt.gca().invert_xaxis()
     plt.xlabel("lambda")
     plt.ylabel("Correct estimations percentage")
     plt.title("Percentage of correct estimations in function of lambda")
-    plt.legend()
     plt.grid()
     plt.show()
 
-    #plotting min, max and mean iterations in funcrtion of tau with q=10 and q=24
-    fig, axs = plt.subplots(3, figsize=(7, 10))
-    fig.suptitle('Iterations in function of lambda')
-    axs[0].plot(lam_list, min_iterations_q_10, label="q=10", color='r')
-    axs[0].plot(lam_list, min_iterations_q_24, label="q=24", color='b')
-    axs[0].set_title('Min iterations')
-    axs[0].legend()
-    axs[1].plot(lam_list, max_iterations_q_10, label="q=10", color='r')
-    axs[1].plot(lam_list, max_iterations_q_24, label="q=24", color='b')
-    axs[1].legend()
-    axs[1].set_title('Max iterations')
-    axs[2].plot(lam_list, mean_iterations_q_10, label="q=10", color='r')
-    axs[2].plot(lam_list, mean_iterations_q_24, label="q=24", color='b')
-    axs[2].set_title('Mean iterations')
-    axs[2].legend()
-    axs[0].grid()
-    axs[1].grid()
-    axs[2].grid()
+    plt.figure()
+    plt.yscale('log')
+    plt.plot(lam_list, min_iterations, color='b', label="Min")
+    plt.plot(lam_list, max_iterations, color='g', label="Max")
+    plt.plot(lam_list, mean_iterations, color='m', label="Mean")
+    plt.gca().invert_xaxis()
+    plt.xlabel("lam")
+    plt.ylabel("Number of iterations")
+    plt.title("q = 10 | Convergence time in function of lambda")
+    plt.legend()
+    plt.grid()
     plt.show()
 
 ############################### TASK 2 ##################################################
@@ -878,9 +823,9 @@ def task_5():
 
 
 if __name__ == "__main__":
-    # task_1()
+    task_1()
     # task_2()
     # task_3()
     # task_4()
     # task_4_optional()
-    task_5()
+    # task_5()
