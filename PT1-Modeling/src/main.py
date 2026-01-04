@@ -228,42 +228,16 @@ def check_support_consensus(z_nodes, n_state, k_elements=2):
 
     return x_cons, a_cons, x_first, a_first
 
-def check_convergence(x_estimates, a_estimates, true_targets_locations, true_attacked_sensors, targets=2, attacks=2):
-    x_converged_status = False
-    a_converged_status = False
-    print(f"Lunghezza Stime: {len(x_estimates)}")
-    print(f"Lunghezza Verità: {len(true_targets_locations)}")
-    print(f"Len a_estimates: {len(a_estimates)}")
-    for i, (x_estimated, true_targets, a_estimated) in enumerate(zip(x_estimates, true_targets_locations[1:], a_estimates)):
-        x_est_idx = np.argsort(np.abs(x_estimated))[-targets:]
-        a_est_idx = np.argsort(np.abs(a_estimated))[-attacks:]
-        true_targets = np.argsort(true_targets)[-targets:]
+def check_convergence(x_estimates, a_estimates, true_targets_locations, true_attacked_sensors, n_targets=2, n_attacks=2):
+    i = 0
+    for x_est, a_est, true_x, true_a in zip(x_estimates[::-1],a_estimates[::-1], true_targets_locations[::-1], true_attacked_sensors[::-1]):
+        i= i+1
+        x_est_idx = np.argsort(np.abs(x_est))[-n_targets:]
+        a_est_idx = np.argsort(np.abs(x_est))[-n_attacks:]
 
         x_est_idx = np.sort(x_est_idx)
         a_est_idx = np.sort(a_est_idx)
-        true_targets = np.sort(true_targets)
-        attacked_sensors = np.sort(true_attacked_sensors[0])
-
-        print(f'x_est_idx: {x_est_idx}, true_targets:  {true_targets}')
-        print(f'a_est_idx: {a_est_idx}, attacked_sensors:  {attacked_sensors}')
-
-        is_x_correct = np.array_equal(x_est_idx, true_targets)
-        if not x_converged_status and is_x_correct:
-            print(f"-> Target Convergence reached at step {i}")
-            x_converged_status = True
-            state_convergence_iteration = i
-
-        is_a_correct = np.array_equal(a_est_idx, attacked_sensors)
-        if not a_converged_status and is_a_correct:
-            print(f"-> Attack Identification Convergence reached at step {i}")
-            a_converged_status = True
-            attacks_convergence_iteration = i
-
-        if x_converged_status == True and a_converged_status == True:
-            return x_converged_status, a_converged_status, state_convergence_iteration, attacks_convergence_iteration
-    print('ITERATIONS: ', i)
-
-    return x_converged_status, a_converged_status, 0, 0
+        true_targets_locations = np.sort(true_targets_locations)
 
 def Localization_with_attacks_task_5(n, q, G, tau, lam, y, true_location_targets, true_attack_indices):
     lam_weights = np.concatenate((np.full(n, 10), np.full(q, 0.1)))
@@ -769,17 +743,18 @@ def task_4_optional():
     attacked_sensors = [(11, 15)] 
     x_true = np.zeros((K,n))
     true_location = []
-    true_location.append([22,35,86])
+    true_location.append([21,34,85])
 
     # Set the ground truth state vector
     for loc in true_location:
         x_true[0, loc] = 1
     # Simulate the dynamics of the targets for the entire duration K
     for i in range(K-1):
+        attacked_sensors.append(attacked_sensors[0])
         x_true[i+1,:] = np.dot(A, x_true[i,:])
 
     x_hat_unaware, a_hat_unaware = observer(n, q, A, G, tau, lam, y, K)
-    x_conv, a_conv, state_convergence_iteration, attacks_convergence_iteration = check_convergence(x_hat_unaware, a_hat_unaware, x_true, attacked_sensors, targets=3, attacks=2)
+    x_conv, a_conv, state_convergence_iteration, attacks_convergence_iteration = check_convergence(x_hat_unaware, a_hat_unaware, x_true, attacked_sensors, n_targets=3, n_attacks=2)
     print(f'x_conv: {x_conv}, state_convergence_iteration: {state_convergence_iteration}')
     print(f'a_conv: {a_conv}, attacks_convergence_iteration: {attacks_convergence_iteration}')
     tracking_plot(n, true_location, x_hat_unaware, a_hat_unaware, sensor_coords, title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
@@ -802,6 +777,17 @@ def task_4_optional():
     print('\n===== OPTIONAL TASK PART 1 =====')
     # Create the vector of measurement corrupted with attacks
     y = np.zeros((q, K))
+    x_true = np.zeros((K,n))
+    true_location = []
+    true_location.append([22, 35, 86])
+
+    # Set the ground truth state vector
+    for loc in true_location:
+        x_true[0, loc] = 1
+    # Simulate the dynamics of the targets for the entire duration K
+    for i in range(K - 1):
+        x_true[i + 1, :] = np.dot(A, x_true[i, :])
+
     for i in range(K):
         # Calculate the "clean" measurements
         y[:, i] = np.dot(D, x_true[i, :])

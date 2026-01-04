@@ -156,9 +156,6 @@ def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_sensors_un
     for i in range(50):
         true_location.append([x-1 for x in true_location[i]])
 
-    # Eliminate the first element of the true_location araay, because estimation array does not start at time 0, but at time k+1
-    true_location.pop(0)
-
     for x,true_x,a in zip(x_hat,true_location, a_hat):
         estimated_targets_location = np.argsort(x)[-3:]
         estimated_attacked_sensors = np.argsort(np.abs(a))[-true_sensors_under_attacks:]
