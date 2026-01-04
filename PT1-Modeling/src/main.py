@@ -741,7 +741,50 @@ def task_4_optional():
     # Simulate the dynamics of the targets for the entire duration K
     for i in range(K-1):
         x_true[:,i+1] = np.dot(A, x_true[:,i])
-        
+
+    x_hat_unaware, a_hat_unaware = observer(n, q, A, G, tau, lam, y, K)
+
+    accuracy = []
+    for x_estimated, x in zip(x_hat_unaware, x_true.T):
+        x_estimated_index = np.argsort(x_estimated)[-3:]
+        # x_estimated = x_estimated[x_estimated_index]
+        accuracy_value = np.linalg.norm(x - x_estimated)**2
+        accuracy.append(accuracy_value)
+        print('x ture: ', x)
+        print('x est: ', x_estimated_index)
+        # print('x est: ', x_estimated)
+        print('accuracy value: ', accuracy_value)
+
+    print(accuracy)
+    # PLOT STATE ACCURACY
+    plt.figure(figsize=(12, 7))
+    plt.plot(accuracy, label="Accuracy unaware attacks", color='b', linewidth=1)
+    plt.plot(len(accuracy)-1, accuracy[-1], 'D', color='b', markersize=3)
+
+    plt.title('Accuracy unaware attacks')
+    plt.xlabel('Iterations')
+    plt.ylabel('Error (L2 Norm)') 
+    plt.legend()
+    plt.grid(True, which="both", ls="-", alpha=0.5)
+    plt.tight_layout()
+    plt.show()
+    return
+
+    for i in range(0, len(a_hat_unaware)-1):
+        a_estimated = np.array(a_hat_unaware[i])
+        estimated_attacked_sensors = np.argsort(np.abs(a_estimated))[-2:]
+        a_estimated_values = a_estimated[estimated_attacked_sensors]
+
+        if len(estimated_attacked_sensors) > 0:
+            print("   Estimated Attack Values:")
+            for idx, val in zip(estimated_attacked_sensors, a_estimated_values):
+                print(f"      -> Sensor {idx}: {val:.4f}")
+        else:
+            print("      -> No attacks detected.")
+
+
+    # ======== OPTIONAL TASK PART 1 ========
+    print('\n===== OPTIONAL TASK PART 1 =====')
     # Create the vector of measurement corrupted with attacks
     y = np.zeros((q, K))
     for i in range(K):
@@ -754,9 +797,157 @@ def task_4_optional():
         y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
 
     x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
-    tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='')
+
+    accuracy = []
+    for x_estimated, x in zip(x_hat, x_true.T):
+        accuracy.append(np.linalg.norm(x - x_estimated)**2)
+    for i in range(0, len(a_hat)-1):
+        a_estimated = np.array(a_hat[i])
+        estimated_attacked_sensors = np.argsort(np.abs(a_estimated))[-2:]
+        a_estimated_values = a_estimated[estimated_attacked_sensors]
+
+        if len(estimated_attacked_sensors) > 0:
+            print("   Estimated Attack Values:")
+            for idx, val in zip(estimated_attacked_sensors, a_estimated_values):
+                print(f"      -> Sensor {idx}: {val:.4f}")
+        else:
+            print("      -> No attacks detected.")
+
+    # PLOT STATE ACCURACY
+    plt.figure(figsize=(12, 7))
+    plt.plot(accuracy, label="Accuracy unaware attacks", color='b', linewidth=1)
+    plt.plot(len(accuracy)-1, accuracy[-1], 'D', color='b', markersize=3)
+
+    plt.title('Accuracy aware attacks')
+    plt.xlabel('Iterations')
+    plt.ylabel('Error (L2 Norm)') 
+    plt.legend()
+    plt.grid(True, which="both", ls="-", alpha=0.5)
+    plt.tight_layout()
     plt.show()
-    return
+
+    # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
+    # plt.show()
+
+    # ===== OPTIONAL TASK PART 2 =====
+    print('\n===== OPTIONAL TASK PART 2 =====')
+    y = np.zeros((q, K))
+    for i in range(K):
+        # Calculate the "clean" measurements
+        y[:, i] = np.dot(D, x_true[:, i])
+        # Change the attacked sensors for the second half iterations
+        if i >= K/2:
+            attacked_sensors = [(8, 17)] 
+        # Add the attacks
+        y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i]
+        y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
+
+    x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
+
+    accuracy = []
+    for x_estimated, x in zip(x_hat, x_true.T):
+        accuracy.append(np.linalg.norm(x - x_estimated)**2)
+    for i in range(0, len(a_hat)-1):
+        a_estimated = np.array(a_hat[i])
+        estimated_attacked_sensors = np.argsort(np.abs(a_estimated))[-2:]
+        a_estimated_values = a_estimated[estimated_attacked_sensors]
+
+        if len(estimated_attacked_sensors) > 0:
+            print("   Estimated Attack Values:")
+            for idx, val in zip(estimated_attacked_sensors, a_estimated_values):
+                print(f"      -> Sensor {idx}: {val:.4f}")
+        else:
+            print("      -> No attacks detected.")
+
+    # PLOT STATE ACCURACY
+    plt.figure(figsize=(12, 7))
+    plt.plot(accuracy, label="Accuracy aware moving attacks", color='b', linewidth=1)
+    plt.plot(len(accuracy)-1, accuracy[-1], 'D', color='b', markersize=3)
+
+    plt.title('Accuracy aware moving attacks')
+    plt.xlabel('Iterations')
+    plt.ylabel('Error (L2 Norm)') 
+    plt.legend()
+    plt.grid(True, which="both", ls="-", alpha=0.5)
+    plt.tight_layout()
+    plt.show()
+    # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='OPTIONAL TASK PART 2')
+    # plt.show()
+
+    # # ===== OPTIONAL TASK PART 3 =====
+    # print('===== OPTIONAL TASK PART 3 =====')
+    # true_location_list = [22, 35, 86] 
+    # initial_targets = np.atleast_1d(np.array(true_location_list))
+    # num_targets = len(initial_targets)
+    
+    # attacked_sensors = [11, 15] 
+    # next_sensor_to_add = 0
+    # max_attacks_tolerated = 0
+    
+    # x_true_moving = np.zeros((n, K))
+    
+    # for k in range(K):
+    #     current_indices = (initial_targets - k) % n 
+    #     x_true_moving[current_indices, k] = 1
+
+    # # --- CICLO DI STRESS TEST ---
+    # while len(attacked_sensors) <= q:
+        
+    #     print(f"\n--- Testing with {len(attacked_sensors)} Attacked Sensors: {attacked_sensors} ---")
+
+    #     y = np.zeros((q, K))
+    #     for k in range(K):
+    #         y[:, k] = np.dot(D, x_true_moving[:, k])
+            
+    #         for sensor_idx in attacked_sensors:
+    #             y[sensor_idx, k] += 0.5 * y[sensor_idx, k] 
+
+    #     x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
+    #     tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_sensors_under_attacks=len(attacked_sensors), title='')
+
+    #     x_final = x_hat[-1]
+    #     a_final = a_hat[-1]
+
+    #     estimated_targets_location = np.argsort(x_final)[-num_targets:]
+        
+    #     true_targets_indices = (initial_targets - (K - 1)) % n
+        
+    #     est_sorted = np.sort(estimated_targets_location)
+    #     true_sorted = np.sort(true_targets_indices)
+        
+    #     is_correct = np.array_equal(est_sorted, true_sorted)
+
+    #     est_attacked = np.argsort(np.abs(a_final))[-len(attacked_sensors):]
+
+    #     print(f"   Est. Targets: {est_sorted} | True: {true_sorted}")
+    #     print(f"   Est. Attacks: {np.sort(est_attacked)} | True: {np.sort(attacked_sensors)}")
+
+    #     if is_correct:
+    #         print("-> SUCCESS: Moving targets correctly tracked.")
+    #         max_attacks_tolerated = len(attacked_sensors)
+            
+    #         if len(attacked_sensors) == q:
+    #             print("-> SYSTEM ROBUST TO ALL SENSORS ATTACKED.")
+    #             break
+            
+    #         while next_sensor_to_add in attacked_sensors and next_sensor_to_add < q:
+    #              next_sensor_to_add += 1
+            
+    #         if next_sensor_to_add < q:
+    #             print(f"-> Adding Sensor {next_sensor_to_add}...")
+    #             attacked_sensors.append(next_sensor_to_add)
+    #         else:
+    #             break 
+            
+    #     else:
+    #         print("-> FAILURE: Lost track of targets.")
+    #         attacked_sensors.pop() 
+    #         break
+
+    # print("\n================RESULT=================")
+    # print(f"Max Attacked Sensors Tolerated: {max_attacks_tolerated}")
+    # print(f"Last Robust Configuration: {attacked_sensors}")
+    # print("=======================================")
 
 ############################### TASK 5 ##################################################
 def task_5():
@@ -810,9 +1001,9 @@ def task_5():
 
 
 if __name__ == "__main__":
-    task_1()
+    # task_1()
     # task_2()
     # task_3()
     # task_4()
-    # task_4_optional()
+    task_4_optional()
     # task_5()
