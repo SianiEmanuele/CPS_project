@@ -1,9 +1,7 @@
 import os as os
-from cProfile import label
 
 import numpy as np
 import matplotlib.pyplot as plt
-from kornia.augmentation.auto.autoaugment.ops import color
 
 from utils import ISTA, IST, ISTA_task_5, localization_plot, tracking_plot
 import scipy.io as sio
@@ -486,12 +484,6 @@ def task_1():
     plt.show()
 
     ##################################### QUESTION 4 ##############################################################
-
-    # In order to highlight the fact that the value of q is the determining factor in the correct estimation of the support, we will conduct two analysis.
-    #     1. Varying tau keeping q equal to 10
-    #     2. Varying tau keeping q equal to 20 (order of x)
-    # For the comparison to be fair we used the same tau with both q==10 and q==20
-
     print("             QUESTION 4\n q = 10 | Try different values for τ , by keeping τλ constant\n")
     
     ##### q = 10 ######
@@ -540,10 +532,6 @@ def task_1():
     plt.show()
 
     ##################################### QUESTION 5 ##############################################################
-    # In order to highlight the fact that the value of q is the determining factor in the correct estimation of the support, we will conduct two analysis.
-    # 1. Varying lambda keeping q equal to 10 and tau constant
-    # 2. Varying lambda keeping q equal to 24 and tau constant
-    # For the comparison to be fair we used the same lambda with both q==10 and q==24
     print("             QUESTION 5\nq=10 | Try different values for λ , by keeping τ constant\n")
 
     q = 10
