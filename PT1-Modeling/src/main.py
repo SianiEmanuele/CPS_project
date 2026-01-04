@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 from utils import ISTA, IST, ISTA_task_5, localization_plot, tracking_plot
 import scipy.io as sio
 from scipy import stats
-import networkx as nx
 
 # List of sensors positions for localization plot
 sensor_coords = np.array([
@@ -731,27 +730,28 @@ def task_4_optional():
     tau = 1 / (np.linalg.norm(G, ord=2)**2) - 10**(-8)
     lam = 1
     attacked_sensors = [(11, 15)] 
-    x_true = np.zeros((n, K))
+    x_true = np.zeros((K,n))
     true_location = []
     true_location.append([22,35,86])
 
     # Set the ground truth state vector
     for loc in true_location:
-        x_true[loc, 0] = 1
+        x_true[0, loc] = 1
     # Simulate the dynamics of the targets for the entire duration K
     for i in range(K-1):
-        x_true[:,i+1] = np.dot(A, x_true[:,i])
+        x_true[i+1,:] = np.dot(A, x_true[i,:])
 
     x_hat_unaware, a_hat_unaware = observer(n, q, A, G, tau, lam, y, K)
 
     accuracy = []
-    for x_estimated, x in zip(x_hat_unaware, x_true.T):
+    for x_estimated, x in zip(x_hat_unaware, x_true[1:]):
         x_estimated_index = np.argsort(x_estimated)[-3:]
         # x_estimated = x_estimated[x_estimated_index]
         accuracy_value = np.linalg.norm(x - x_estimated)**2
         accuracy.append(accuracy_value)
-        print('x ture: ', x)
+        # print('x true: ', x)
         print('x est: ', x_estimated_index)
+        print('x_true est: ', np.sort(np.argsort(x)[-3:]))
         # print('x est: ', x_estimated)
         print('accuracy value: ', accuracy_value)
 
@@ -1004,6 +1004,6 @@ if __name__ == "__main__":
     # task_1()
     # task_2()
     # task_3()
-    # task_4()
-    task_4_optional()
+    task_4()
+    # task_4_optional()
     # task_5()
