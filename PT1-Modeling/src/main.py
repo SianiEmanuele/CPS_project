@@ -763,7 +763,6 @@ def task_4_optional():
     K = y.shape[1]
     G = np.hstack((D, np.eye(q)))
     G = stats.zscore(G, axis=0)
-    # print('Yo: ',y[0])
 
     tau = 1 / (np.linalg.norm(G, ord=2)**2) - 10**(-8)
     lam = 1
@@ -783,6 +782,8 @@ def task_4_optional():
     x_conv, a_conv, state_convergence_iteration, attacks_convergence_iteration = check_convergence(x_hat_unaware, a_hat_unaware, x_true, attacked_sensors, targets=3, attacks=2)
     print(f'x_conv: {x_conv}, state_convergence_iteration: {state_convergence_iteration}')
     print(f'a_conv: {a_conv}, attacks_convergence_iteration: {attacks_convergence_iteration}')
+    tracking_plot(n, true_location, x_hat_unaware, a_hat_unaware, sensor_coords, title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
+    plt.show()
 
     # for i in range(0, len(a_hat_unaware)-1):
     #     a_estimated = np.array(a_hat_unaware[i])
@@ -815,8 +816,8 @@ def task_4_optional():
     x_conv_1, a_conv_1, state_convergence_iteration_1, attacks_convergence_iteration_1 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, targets=3, attacks=2)
     print(f'x_conv: {x_conv_1}, state_convergence_iteration: {state_convergence_iteration_1}')
     print(f'x_conv: {a_conv_1}, state_convergence_iteration: {attacks_convergence_iteration_1}')
-    # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
-    # plt.show()
+    tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
+    plt.show()
 
     # ===== OPTIONAL TASK PART 2 =====
     print('\n===== OPTIONAL TASK PART 2 =====')
@@ -828,11 +829,8 @@ def task_4_optional():
         if i >= K/2:
             attacked_sensors = [(8, 17)] 
         # Add the attacks
-        y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i] # non ci vuole i+1?
+        y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i]
         y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
-
-    # print('Y: ', y[:, i])
-
 
     x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
     x_conv_2, a_conv_2, state_convergence_iteration_2, attacks_convergence_iteration_2 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, targets=3, attacks=2)
