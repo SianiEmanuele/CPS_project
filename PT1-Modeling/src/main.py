@@ -228,6 +228,43 @@ def check_support_consensus(z_nodes, n_state, k_elements=2):
 
     return x_cons, a_cons, x_first, a_first
 
+def check_convergence(x_estimates, a_estimates, true_targets_locations, true_attacked_sensors, targets=2, attacks=2):
+    x_converged_status = False
+    a_converged_status = False
+    print(f"Lunghezza Stime: {len(x_estimates)}")
+    print(f"Lunghezza Verità: {len(true_targets_locations)}")
+    print(f"Len a_estimates: {len(a_estimates)}")
+    for i, (x_estimated, true_targets, a_estimated) in enumerate(zip(x_estimates, true_targets_locations[1:], a_estimates)):
+        x_est_idx = np.argsort(np.abs(x_estimated))[-targets:]
+        a_est_idx = np.argsort(np.abs(a_estimated))[-attacks:]
+        true_targets = np.argsort(true_targets)[-targets:]
+
+        x_est_idx = np.sort(x_est_idx)
+        a_est_idx = np.sort(a_est_idx)
+        true_targets = np.sort(true_targets)
+        attacked_sensors = np.sort(true_attacked_sensors[0])
+
+        print(f'x_est_idx: {x_est_idx}, true_targets:  {true_targets}')
+        print(f'a_est_idx: {a_est_idx}, attacked_sensors:  {attacked_sensors}')
+
+        is_x_correct = np.array_equal(x_est_idx, true_targets)
+        if not x_converged_status and is_x_correct:
+            print(f"-> Target Convergence reached at step {i}")
+            x_converged_status = True
+            state_convergence_iteration = i
+
+        is_a_correct = np.array_equal(a_est_idx, attacked_sensors)
+        if not a_converged_status and is_a_correct:
+            print(f"-> Attack Identification Convergence reached at step {i}")
+            a_converged_status = True
+            attacks_convergence_iteration = i
+
+        if x_converged_status == True and a_converged_status == True:
+            return x_converged_status, a_converged_status, state_convergence_iteration, attacks_convergence_iteration
+    print('ITERATIONS: ', i)
+
+    return x_converged_status, a_converged_status, 0, 0
+
 def Localization_with_attacks_task_5(n, q, G, tau, lam, y, true_location_targets, true_attack_indices):
     lam_weights = np.concatenate((np.full(n, 10), np.full(q, 0.1)))
     final_lam = lam * lam_weights
@@ -726,6 +763,7 @@ def task_4_optional():
     K = y.shape[1]
     G = np.hstack((D, np.eye(q)))
     G = stats.zscore(G, axis=0)
+    # print('Yo: ',y[0])
 
     tau = 1 / (np.linalg.norm(G, ord=2)**2) - 10**(-8)
     lam = 1
@@ -742,45 +780,21 @@ def task_4_optional():
         x_true[i+1,:] = np.dot(A, x_true[i,:])
 
     x_hat_unaware, a_hat_unaware = observer(n, q, A, G, tau, lam, y, K)
+    x_conv, a_conv, state_convergence_iteration, attacks_convergence_iteration = check_convergence(x_hat_unaware, a_hat_unaware, x_true, attacked_sensors, targets=3, attacks=2)
+    print(f'x_conv: {x_conv}, state_convergence_iteration: {state_convergence_iteration}')
+    print(f'a_conv: {a_conv}, attacks_convergence_iteration: {attacks_convergence_iteration}')
 
-    accuracy = []
-    for x_estimated, x in zip(x_hat_unaware, x_true[1:]):
-        x_estimated_index = np.argsort(x_estimated)[-3:]
-        # x_estimated = x_estimated[x_estimated_index]
-        accuracy_value = np.linalg.norm(x - x_estimated)**2
-        accuracy.append(accuracy_value)
-        # print('x true: ', x)
-        print('x est: ', x_estimated_index)
-        print('x_true est: ', np.sort(np.argsort(x)[-3:]))
-        # print('x est: ', x_estimated)
-        print('accuracy value: ', accuracy_value)
+    # for i in range(0, len(a_hat_unaware)-1):
+    #     a_estimated = np.array(a_hat_unaware[i])
+    #     estimated_attacked_sensors = np.argsort(np.abs(a_estimated))[-2:]
+    #     a_estimated_values = a_estimated[estimated_attacked_sensors]
 
-    print(accuracy)
-    # PLOT STATE ACCURACY
-    plt.figure(figsize=(12, 7))
-    plt.plot(accuracy, label="Accuracy unaware attacks", color='b', linewidth=1)
-    plt.plot(len(accuracy)-1, accuracy[-1], 'D', color='b', markersize=3)
-
-    plt.title('Accuracy unaware attacks')
-    plt.xlabel('Iterations')
-    plt.ylabel('Error (L2 Norm)') 
-    plt.legend()
-    plt.grid(True, which="both", ls="-", alpha=0.5)
-    plt.tight_layout()
-    plt.show()
-    return
-
-    for i in range(0, len(a_hat_unaware)-1):
-        a_estimated = np.array(a_hat_unaware[i])
-        estimated_attacked_sensors = np.argsort(np.abs(a_estimated))[-2:]
-        a_estimated_values = a_estimated[estimated_attacked_sensors]
-
-        if len(estimated_attacked_sensors) > 0:
-            print("   Estimated Attack Values:")
-            for idx, val in zip(estimated_attacked_sensors, a_estimated_values):
-                print(f"      -> Sensor {idx}: {val:.4f}")
-        else:
-            print("      -> No attacks detected.")
+    #     if len(estimated_attacked_sensors) > 0:
+    #         print("   Estimated Attack Values:")
+    #         for idx, val in zip(estimated_attacked_sensors, a_estimated_values):
+    #             print(f"      -> Sensor {idx}: {val:.4f}")
+    #     else:
+    #         print("      -> No attacks detected.")
 
 
     # ======== OPTIONAL TASK PART 1 ========
@@ -789,7 +803,7 @@ def task_4_optional():
     y = np.zeros((q, K))
     for i in range(K):
         # Calculate the "clean" measurements
-        y[:, i] = np.dot(D, x_true[:, i])
+        y[:, i] = np.dot(D, x_true[i, :])
         # Add the attacks onn sensor 11 and 15
         # Attack on Sensor 11
         y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i]
@@ -798,34 +812,9 @@ def task_4_optional():
 
     x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
 
-    accuracy = []
-    for x_estimated, x in zip(x_hat, x_true.T):
-        accuracy.append(np.linalg.norm(x - x_estimated)**2)
-    for i in range(0, len(a_hat)-1):
-        a_estimated = np.array(a_hat[i])
-        estimated_attacked_sensors = np.argsort(np.abs(a_estimated))[-2:]
-        a_estimated_values = a_estimated[estimated_attacked_sensors]
-
-        if len(estimated_attacked_sensors) > 0:
-            print("   Estimated Attack Values:")
-            for idx, val in zip(estimated_attacked_sensors, a_estimated_values):
-                print(f"      -> Sensor {idx}: {val:.4f}")
-        else:
-            print("      -> No attacks detected.")
-
-    # PLOT STATE ACCURACY
-    plt.figure(figsize=(12, 7))
-    plt.plot(accuracy, label="Accuracy unaware attacks", color='b', linewidth=1)
-    plt.plot(len(accuracy)-1, accuracy[-1], 'D', color='b', markersize=3)
-
-    plt.title('Accuracy aware attacks')
-    plt.xlabel('Iterations')
-    plt.ylabel('Error (L2 Norm)') 
-    plt.legend()
-    plt.grid(True, which="both", ls="-", alpha=0.5)
-    plt.tight_layout()
-    plt.show()
-
+    x_conv_1, a_conv_1, state_convergence_iteration_1, attacks_convergence_iteration_1 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, targets=3, attacks=2)
+    print(f'x_conv: {x_conv_1}, state_convergence_iteration: {state_convergence_iteration_1}')
+    print(f'x_conv: {a_conv_1}, state_convergence_iteration: {attacks_convergence_iteration_1}')
     # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
     # plt.show()
 
@@ -834,43 +823,21 @@ def task_4_optional():
     y = np.zeros((q, K))
     for i in range(K):
         # Calculate the "clean" measurements
-        y[:, i] = np.dot(D, x_true[:, i])
+        y[:, i] = np.dot(D, x_true[i, :])
         # Change the attacked sensors for the second half iterations
         if i >= K/2:
             attacked_sensors = [(8, 17)] 
         # Add the attacks
-        y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i]
+        y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i] # non ci vuole i+1?
         y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
 
+    # print('Y: ', y[:, i])
+
+
     x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
-
-    accuracy = []
-    for x_estimated, x in zip(x_hat, x_true.T):
-        accuracy.append(np.linalg.norm(x - x_estimated)**2)
-    for i in range(0, len(a_hat)-1):
-        a_estimated = np.array(a_hat[i])
-        estimated_attacked_sensors = np.argsort(np.abs(a_estimated))[-2:]
-        a_estimated_values = a_estimated[estimated_attacked_sensors]
-
-        if len(estimated_attacked_sensors) > 0:
-            print("   Estimated Attack Values:")
-            for idx, val in zip(estimated_attacked_sensors, a_estimated_values):
-                print(f"      -> Sensor {idx}: {val:.4f}")
-        else:
-            print("      -> No attacks detected.")
-
-    # PLOT STATE ACCURACY
-    plt.figure(figsize=(12, 7))
-    plt.plot(accuracy, label="Accuracy aware moving attacks", color='b', linewidth=1)
-    plt.plot(len(accuracy)-1, accuracy[-1], 'D', color='b', markersize=3)
-
-    plt.title('Accuracy aware moving attacks')
-    plt.xlabel('Iterations')
-    plt.ylabel('Error (L2 Norm)') 
-    plt.legend()
-    plt.grid(True, which="both", ls="-", alpha=0.5)
-    plt.tight_layout()
-    plt.show()
+    x_conv_2, a_conv_2, state_convergence_iteration_2, attacks_convergence_iteration_2 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, targets=3, attacks=2)
+    print(f'x_conv: {x_conv_2}, state_convergence_iteration: {state_convergence_iteration_2}')
+    print(f'x_conv: {a_conv_2}, state_convergence_iteration: {attacks_convergence_iteration_2}')
     # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='OPTIONAL TASK PART 2')
     # plt.show()
 
@@ -1004,6 +971,6 @@ if __name__ == "__main__":
     # task_1()
     # task_2()
     # task_3()
-    task_4()
-    # task_4_optional()
+    # task_4()
+    task_4_optional()
     # task_5()
