@@ -228,16 +228,52 @@ def check_support_consensus(z_nodes, n_state, k_elements=2):
 
     return x_cons, a_cons, x_first, a_first
 
-def check_convergence(x_estimates, a_estimates, true_targets_locations, true_attacked_sensors, n_targets=2, n_attacks=2):
+def check_convergence(x_estimates, a_estimates, true_targets_locations, true_attacked_sensors, n_targets=2, n_attacks=2, n_change_attacks=1):
+    x_converged_status = 0
+    a_converged_status = 0
     i = 0
-    for x_est, a_est, true_x, true_a in zip(x_estimates[::-1],a_estimates[::-1], true_targets_locations[::-1], true_attacked_sensors[::-1]):
+    for x_est, a_est, true_x, true_a in zip(x_estimates, a_estimates, true_targets_locations, true_attacked_sensors):
         i= i+1
         x_est_idx = np.argsort(np.abs(x_est))[-n_targets:]
-        a_est_idx = np.argsort(np.abs(x_est))[-n_attacks:]
+        a_est_idx = np.argsort(np.abs(a_est))[-n_attacks:]
 
         x_est_idx = np.sort(x_est_idx)
         a_est_idx = np.sort(a_est_idx)
-        true_targets_locations = np.sort(true_targets_locations)
+        true_targets = np.sort(np.argsort(true_x)[-n_targets:])
+        attacked_sensors = np.sort(true_a).tolist()
+
+        print(f'x_est_idx: {x_est_idx}, true_targets:  {true_targets}')
+        print(f'a_est_idx: {a_est_idx}, attacked_sensors:  {attacked_sensors}')
+        expected_x = (prev_x_est_idx - 1) % 100 if i != 1 else x_est_idx
+        print('expected_prev: ', np.sort(expected_x))
+        prev_x_est_idx = x_est_idx
+        prev_a_est_idx = a_est_idx
+
+        is_x_correct = np.array_equal(x_est_idx, true_targets)
+        is_x_mantenance = np.array_equal(x_est_idx, np.sort(expected_x))
+        if not x_converged_status and is_x_correct:
+            # print(f"-> Target Convergence reached at step {i}")
+            print('Maybe convergence!')
+            x_converged_status = True
+            state_convergence_iteration = i
+        elif x_converged_status and is_x_correct and not is_x_mantenance:
+            print('False allarm!')
+            x_converged_status = False
+            state_convergence_iteration = -1
+
+        is_a_correct = np.array_equal(a_est_idx, attacked_sensors)
+        is_a_mantenance = np.array_equal(a_est_idx, prev_a_est_idx)
+        if not a_converged_status and is_a_correct:
+            # print(f"-> Target Convergence reached at step {i}")
+            a_converged_status = True
+            attacks_convergence_iteration = i
+        elif a_converged_status and is_a_correct and not is_a_mantenance:
+            a_converged_status = False
+            attacks_convergence_iteration = -1
+
+    print('ITERATIONS: ', i)
+
+    return x_converged_status, a_converged_status, state_convergence_iteration, attacks_convergence_iteration
 
 def Localization_with_attacks_task_5(n, q, G, tau, lam, y, true_location_targets, true_attack_indices):
     lam_weights = np.concatenate((np.full(n, 10), np.full(q, 0.1)))
@@ -723,7 +759,7 @@ def task_4():
     return
 
 ############################### TASK 4 OPTIONAL #########################################
-def task_4_optional():
+def task_4_optional(execute_part_1=True, execute_part_2=True, execute_part_3=True):
     np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
     cwd = os.getcwd()
     # mat = sio.loadmat(cwd + r'/CPS_project/PT1-Modeling/src/utils/tracking_moving_targets.mat')
@@ -743,7 +779,7 @@ def task_4_optional():
     attacked_sensors = [(11, 15)] 
     x_true = np.zeros((K,n))
     true_location = []
-    true_location.append([21,34,85])
+    true_location.append([21,34,85]) # Changed targets values due to python and matlab mismatch
 
     # Set the ground truth state vector
     for loc in true_location:
@@ -754,141 +790,131 @@ def task_4_optional():
         x_true[i+1,:] = np.dot(A, x_true[i,:])
 
     x_hat_unaware, a_hat_unaware = observer(n, q, A, G, tau, lam, y, K)
-    # x_conv, a_conv, state_convergence_iteration, attacks_convergence_iteration = check_convergence(x_hat_unaware, a_hat_unaware, x_true, attacked_sensors, targets=3, attacks=2)
-    # print(f'x_conv: {x_conv}, state_convergence_iteration: {state_convergence_iteration}')
-    # print(f'a_conv: {a_conv}, attacks_convergence_iteration: {attacks_convergence_iteration}')
-    tracking_plot(n, true_location, x_hat_unaware, a_hat_unaware, sensor_coords, title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
+    x_conv, a_conv, state_convergence_iteration, attacks_convergence_iteration = check_convergence(x_hat_unaware, a_hat_unaware, x_true, attacked_sensors, n_targets=3, n_attacks=2)
+    print(f'x_conv: {x_conv}, state_convergence_iteration: {state_convergence_iteration}')
+    print(f'a_conv: {a_conv}, attacks_convergence_iteration: {attacks_convergence_iteration}')
+    tracking_plot(n, true_location, x_hat_unaware, a_hat_unaware, sensor_coords, title='OPTIONAL TASK PART WITH AWARE ATTACKS')
     plt.show()
-
-    # for i in range(0, len(a_hat_unaware)-1):
-    #     a_estimated = np.array(a_hat_unaware[i])
-    #     estimated_attacked_sensors = np.argsort(np.abs(a_estimated))[-2:]
-    #     a_estimated_values = a_estimated[estimated_attacked_sensors]
-
-    #     if len(estimated_attacked_sensors) > 0:
-    #         print("   Estimated Attack Values:")
-    #         for idx, val in zip(estimated_attacked_sensors, a_estimated_values):
-    #             print(f"      -> Sensor {idx}: {val:.4f}")
-    #     else:
-    #         print("      -> No attacks detected.")
-
 
     # ======== OPTIONAL TASK PART 1 ========
-    print('\n===== OPTIONAL TASK PART 1 =====')
-    # Create the vector of measurement corrupted with attacks
-    y = np.zeros((q, K))
+    if execute_part_1 == True:
+        print('\n===== OPTIONAL TASK PART 1 =====')
+        # Create the vector of measurement corrupted with attacks
+        y = np.zeros((q, K))
 
-    for i in range(K):
-        # Calculate the "clean" measurements
-        y[:, i] = np.dot(D, x_true[i, :])
-        # Add the attacks onn sensor 11 and 15
-        # Attack on Sensor 11
-        y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i]
-        # Attack on Sensor 15
-        y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
+        for i in range(K):
+            # Calculate the "clean" measurements
+            y[:, i] = np.dot(D, x_true[i, :])
+            # Add the attacks onn sensor 11 and 15
+            # Attack on Sensor 11
+            y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i]
+            # Attack on Sensor 15
+            y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
 
-    x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
+        x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
 
-    # x_conv_1, a_conv_1, state_convergence_iteration_1, attacks_convergence_iteration_1 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, targets=3, attacks=2)
-    # print(f'x_conv: {x_conv_1}, state_convergence_iteration: {state_convergence_iteration_1}')
-    # print(f'x_conv: {a_conv_1}, state_convergence_iteration: {attacks_convergence_iteration_1}')
-    tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
-    plt.show()
+        # x_conv_1, a_conv_1, state_convergence_iteration_1, attacks_convergence_iteration_1 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, targets=3, attacks=2)
+        # print(f'x_conv: {x_conv_1}, state_convergence_iteration: {state_convergence_iteration_1}')
+        # print(f'x_conv: {a_conv_1}, state_convergence_iteration: {attacks_convergence_iteration_1}')
+        tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
+        plt.show()
 
     # ===== OPTIONAL TASK PART 2 =====
-    print('\n===== OPTIONAL TASK PART 2 =====')
-    y = np.zeros((q, K))
-    for i in range(K):
-        # Calculate the "clean" measurements
-        y[:, i] = np.dot(D, x_true[i, :])
-        # Change the attacked sensors for the second half iterations
-        if i >= K/2:
-            attacked_sensors = [(8, 17)] 
-        # Add the attacks
-        y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i]
-        y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
+    if execute_part_2 == True:
+        print('\n===== OPTIONAL TASK PART 2 =====')
+        y = np.zeros((q, K))
+        for i in range(K):
+            # Calculate the "clean" measurements
+            y[:, i] = np.dot(D, x_true[i, :])
+            # Change the attacked sensors for the second half iterations
+            if i >= K/2:
+                attacked_sensors = [(8, 17)] 
+            # Add the attacks
+            y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i]
+            y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
 
-    x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
-    # x_conv_2, a_conv_2, state_convergence_iteration_2, attacks_convergence_iteration_2 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, targets=3, attacks=2)
-    # print(f'x_conv: {x_conv_2}, state_convergence_iteration: {state_convergence_iteration_2}')
-    # print(f'x_conv: {a_conv_2}, state_convergence_iteration: {attacks_convergence_iteration_2}')
-    # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='OPTIONAL TASK PART 2')
-    # plt.show()
+        x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
+        x_conv_2, a_conv_2, state_convergence_iteration_2, attacks_convergence_iteration_2 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, targets=3, attacks=2)
+        print(f'x_conv: {x_conv_2}, state_convergence_iteration: {state_convergence_iteration_2}')
+        print(f'x_conv: {a_conv_2}, state_convergence_iteration: {attacks_convergence_iteration_2}')
+        tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='OPTIONAL TASK PART 2')
+        plt.show()
 
     # # ===== OPTIONAL TASK PART 3 =====
-    # print('===== OPTIONAL TASK PART 3 =====')
-    # true_location_list = [22, 35, 86] 
-    # initial_targets = np.atleast_1d(np.array(true_location_list))
-    # num_targets = len(initial_targets)
-    
-    # attacked_sensors = [11, 15] 
-    # next_sensor_to_add = 0
-    # max_attacks_tolerated = 0
-    
-    # x_true_moving = np.zeros((n, K))
-    
-    # for k in range(K):
-    #     current_indices = (initial_targets - k) % n 
-    #     x_true_moving[current_indices, k] = 1
-
-    # # --- CICLO DI STRESS TEST ---
-    # while len(attacked_sensors) <= q:
+    if execute_part_3 == True:
+        print('===== OPTIONAL TASK PART 3 =====')
+        # true_location_list = [22, 35, 86] 
+        # initial_targets = np.atleast_1d(np.array(true_location_list))
+        # num_targets = len(initial_targets)
         
-    #     print(f"\n--- Testing with {len(attacked_sensors)} Attacked Sensors: {attacked_sensors} ---")
-
-    #     y = np.zeros((q, K))
-    #     for k in range(K):
-    #         y[:, k] = np.dot(D, x_true_moving[:, k])
-            
-    #         for sensor_idx in attacked_sensors:
-    #             y[sensor_idx, k] += 0.5 * y[sensor_idx, k] 
-
-    #     x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
-    #     tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_sensors_under_attacks=len(attacked_sensors), title='')
-
-    #     x_final = x_hat[-1]
-    #     a_final = a_hat[-1]
-
-    #     estimated_targets_location = np.argsort(x_final)[-num_targets:]
+        # attacked_sensors = [11, 15] 
+        # next_sensor_to_add = 0
+        # max_attacks_tolerated = 0
         
-    #     true_targets_indices = (initial_targets - (K - 1)) % n
+        # x_true_moving = np.zeros((n, K))
         
-    #     est_sorted = np.sort(estimated_targets_location)
-    #     true_sorted = np.sort(true_targets_indices)
-        
-    #     is_correct = np.array_equal(est_sorted, true_sorted)
+        # for k in range(K):
+        #     current_indices = (initial_targets - k) % n 
+        #     x_true_moving[current_indices, k] = 1
 
-    #     est_attacked = np.argsort(np.abs(a_final))[-len(attacked_sensors):]
+        # # --- CICLO DI STRESS TEST ---
+        # while len(attacked_sensors) <= q:
+            
+        #     print(f"\n--- Testing with {len(attacked_sensors)} Attacked Sensors: {attacked_sensors} ---")
 
-    #     print(f"   Est. Targets: {est_sorted} | True: {true_sorted}")
-    #     print(f"   Est. Attacks: {np.sort(est_attacked)} | True: {np.sort(attacked_sensors)}")
+        #     y = np.zeros((q, K))
+        #     for k in range(K):
+        #         y[:, k] = np.dot(D, x_true_moving[:, k])
+                
+        #         for sensor_idx in attacked_sensors:
+        #             y[sensor_idx, k] += 0.5 * y[sensor_idx, k] 
 
-    #     if is_correct:
-    #         print("-> SUCCESS: Moving targets correctly tracked.")
-    #         max_attacks_tolerated = len(attacked_sensors)
-            
-    #         if len(attacked_sensors) == q:
-    #             print("-> SYSTEM ROBUST TO ALL SENSORS ATTACKED.")
-    #             break
-            
-    #         while next_sensor_to_add in attacked_sensors and next_sensor_to_add < q:
-    #              next_sensor_to_add += 1
-            
-    #         if next_sensor_to_add < q:
-    #             print(f"-> Adding Sensor {next_sensor_to_add}...")
-    #             attacked_sensors.append(next_sensor_to_add)
-    #         else:
-    #             break 
-            
-    #     else:
-    #         print("-> FAILURE: Lost track of targets.")
-    #         attacked_sensors.pop() 
-    #         break
+        #     x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
+        #     tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_sensors_under_attacks=len(attacked_sensors), title='')
 
-    # print("\n================RESULT=================")
-    # print(f"Max Attacked Sensors Tolerated: {max_attacks_tolerated}")
-    # print(f"Last Robust Configuration: {attacked_sensors}")
-    # print("=======================================")
+        #     x_final = x_hat[-1]
+        #     a_final = a_hat[-1]
+
+        #     estimated_targets_location = np.argsort(x_final)[-num_targets:]
+            
+        #     true_targets_indices = (initial_targets - (K - 1)) % n
+            
+        #     est_sorted = np.sort(estimated_targets_location)
+        #     true_sorted = np.sort(true_targets_indices)
+            
+        #     is_correct = np.array_equal(est_sorted, true_sorted)
+
+        #     est_attacked = np.argsort(np.abs(a_final))[-len(attacked_sensors):]
+
+        #     print(f"   Est. Targets: {est_sorted} | True: {true_sorted}")
+        #     print(f"   Est. Attacks: {np.sort(est_attacked)} | True: {np.sort(attacked_sensors)}")
+
+        #     if is_correct:
+        #         print("-> SUCCESS: Moving targets correctly tracked.")
+        #         max_attacks_tolerated = len(attacked_sensors)
+                
+        #         if len(attacked_sensors) == q:
+        #             print("-> SYSTEM ROBUST TO ALL SENSORS ATTACKED.")
+        #             break
+                
+        #         while next_sensor_to_add in attacked_sensors and next_sensor_to_add < q:
+        #              next_sensor_to_add += 1
+                
+        #         if next_sensor_to_add < q:
+        #             print(f"-> Adding Sensor {next_sensor_to_add}...")
+        #             attacked_sensors.append(next_sensor_to_add)
+        #         else:
+        #             break 
+                
+        #     else:
+        #         print("-> FAILURE: Lost track of targets.")
+        #         attacked_sensors.pop() 
+        #         break
+
+        # print("\n================RESULT=================")
+        # print(f"Max Attacked Sensors Tolerated: {max_attacks_tolerated}")
+        # print(f"Last Robust Configuration: {attacked_sensors}")
+        # print("=======================================")
 
 ############################### TASK 5 ##################################################
 def task_5():
@@ -945,6 +971,6 @@ if __name__ == "__main__":
     # task_1()
     # task_2()
     # task_3()
-    task_4()
-    # task_4_optional()
+    # task_4()
+    task_4_optional(execute_part_1=False, execute_part_2=False, execute_part_3=False)
     # task_5()
