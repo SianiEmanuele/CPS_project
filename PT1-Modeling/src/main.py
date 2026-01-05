@@ -238,6 +238,7 @@ def check_convergence(x_estimates, a_estimates, true_targets_locations, true_att
     current_config_idx = (i) // interval_step
     current_config_idx = min(current_config_idx, len(true_attacked_sensors) - 1)
     prev_config = current_config_idx  # Calculating current x estimation index from previous
+    prev_a_est_idx = []
 
     for x_est, a_est, true_x in zip(x_estimates, a_estimates, true_targets_locations):
         i= i+1
@@ -273,7 +274,6 @@ def check_convergence(x_estimates, a_estimates, true_targets_locations, true_att
         expected_x = (prev_x_est_idx - 1) % 100 if i != 1 else x_est_idx # Calculating current x estimation index from previous
         # print('expected_prev: ', np.sort(expected_x))
         prev_x_est_idx = x_est_idx
-        prev_a_est_idx = a_est_idx
 
         # print(f'x_est_idx: {x_est_idx}, true_targets:  {true_targets}')
         # print(f'a_est_idx: {a_est_idx}, attacked_sensors:  {attacked_sensors}')
@@ -305,11 +305,12 @@ def check_convergence(x_estimates, a_estimates, true_targets_locations, true_att
             print('Maybe attacks convergence!')
             a_converged_status = True
             attacks_convergence_iteration.append(i)
-        elif a_converged_status and is_a_correct and not is_a_maintenance:
+        elif a_converged_status and not is_a_maintenance:
             print('False allarm for attacks!')
             a_converged_status = False
             attacks_convergence_iteration.pop()
         
+        prev_a_est_idx = a_est_idx
         prev_config = current_config_idx if n_change_attacks != 0 else 0 # Calculating current x estimation index from previous
         
     print('ITERATIONS: ', i)
