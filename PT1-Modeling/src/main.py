@@ -282,12 +282,12 @@ def check_convergence(x_estimates, a_estimates, true_targets_locations, true_att
 
         # --- State convergence check ---
         is_x_correct = np.array_equal(x_est_idx, true_targets)
-        is_x_maintenance = np.array_equal(x_est_idx, np.sort(expected_x))
+        is_x_mantenance = np.array_equal(x_est_idx, np.sort(expected_x))
         if not x_converged_status and is_x_correct:
             # print('Maybe state convergence!')
             x_converged_status = True
             state_convergence_iteration = i
-        elif (x_converged_status and not is_x_maintenance) or not is_x_correct:
+        elif x_converged_status and is_x_correct and not is_x_mantenance:
             # print('False allarm for state!')
             x_converged_status = False
             state_convergence_iteration = -1
@@ -306,7 +306,7 @@ def check_convergence(x_estimates, a_estimates, true_targets_locations, true_att
             print('Maybe attacks convergence!')
             a_converged_status = True
             attacks_convergence_iteration.append(i)
-        elif (a_converged_status and not is_a_maintenance) or (n_change_attacks > 0 and current_config_idx == prev_config and not is_a_correct):
+        elif a_converged_status and not is_a_maintenance:
             print('False allarm for attacks!')
             a_converged_status = False
             attacks_convergence_iteration.pop()
