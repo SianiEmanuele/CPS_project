@@ -1,5 +1,5 @@
 import os as os
-
+import random
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -229,9 +229,10 @@ def check_support_consensus(z_nodes, n_state, k_elements=2):
     return x_cons, a_cons, x_first, a_first
 
 def check_convergence(x_estimates, a_estimates, true_targets_locations, true_attacked_sensors, n_targets=2, n_attacks=2, n_change_attacks=0):
-    x_converged_status = 0
-    a_converged_status = 0
+    x_converged_status = False
+    a_converged_status = False
     attacks_convergence_iteration = []
+    state_convergence_iteration = 50
     i = 0
     total_iterations = len(x_estimates)
     interval_step = total_iterations // (n_change_attacks) if (n_change_attacks) > 0 else total_iterations
@@ -895,9 +896,14 @@ def task_4_optional(execute_part_1=True, execute_part_2=True, execute_part_3=Tru
         true_location_list = [21, 34, 85] 
         initial_targets = np.atleast_1d(np.array(true_location_list))
         num_targets = len(initial_targets)
-        
-        attacked_sensors = [0, 1] 
+        attacked_sensors = []
+
+        all_sensors = [i for i in range(25)]
+        random.shuffle(all_sensors)
         next_sensor_to_add = 0
+
+        for _ in range(2):
+            attacked_sensors.append(all_sensors.pop(0))
         max_attacks_tolerated = 0
         
         x_true_moving = np.zeros((n, K))
@@ -915,7 +921,11 @@ def task_4_optional(execute_part_1=True, execute_part_2=True, execute_part_3=Tru
             for i in range(K):
                 y[:, i] = np.dot(D, x_true_moving[:, i])
                 for sensor_idx in attacked_sensors:
-                    y[sensor_idx, i] += 0.5 * y[sensor_idx, i] 
+                    # AWARE
+                    # y[sensor_idx, i] += 0.5 * y[sensor_idx, i]
+                    y_mean = np.mean(y[:, i])
+                    a = np.random.uniform(0.9 * y_mean, 1.1 * y_mean)
+                    y[sensor_idx, i] += a
 
             x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
             # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_sensors_under_attacks=len(attacked_sensors), title='')
@@ -947,14 +957,19 @@ def task_4_optional(execute_part_1=True, execute_part_2=True, execute_part_3=Tru
                 break
             tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, n_attacks=len(attacked_sensors), title='OPTIONAL TASK PART 3')
 
-            while next_sensor_to_add in attacked_sensors and next_sensor_to_add < q:
-                    next_sensor_to_add += 1
+            #while next_sensor_to_add in attacked_sensors and next_sensor_to_add < q:
+            #        next_sensor_to_add += 1
             
-            if next_sensor_to_add < q:
-                print(f"-> Adding Sensor {next_sensor_to_add}...")
-                attacked_sensors.append(next_sensor_to_add)
-            else:
-                break
+            # if next_sensor_to_add < q:
+            #     print(f"-> Adding Sensor {next_sensor_to_add}...")
+            #     attacked_sensors.append(next_sensor_to_add)
+
+            next_sensor_to_add = all_sensors.pop(0)
+            print(f"-> Adding Sensor {next_sensor_to_add}...")
+
+            attacked_sensors.append((next_sensor_to_add))
+            # else:
+            #     break
 
 
             print('\n===========================================================\n')
