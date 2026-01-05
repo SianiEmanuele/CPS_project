@@ -142,10 +142,11 @@ def localization_plot(true_location, estimated_targets_location, estimated_attac
     plt.legend(loc='upper left')
     plt.gca().set_aspect('equal', adjustable='box')
 
-def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_sensors_under_attacks=2, title=''):
+def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, n_attacks=2, title=''):
     H = 10
     L = 10
     W = 100
+    k = 0
     room_grid = np.zeros((2, n))
     for i in range(n):
         room_grid[0, i] = W//2 + (i % L) * W
@@ -157,9 +158,10 @@ def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_sensors_un
         true_location.append([x-1 for x in true_location[i]])
 
     for x,true_x,a in zip(x_hat,true_location, a_hat):
+    
         estimated_targets_location = np.argsort(x)[-3:]
-        estimated_attacked_sensors = np.argsort(np.abs(a))[-true_sensors_under_attacks:]
-        print("Estimated attacked sensors: ", estimated_attacked_sensors)
+        estimated_attacked_sensors = np.argsort(np.abs(a))[-n_attacks:]
+        print("Iteration: ", k ,"| Estimated attacked sensors: ", estimated_attacked_sensors)
         ax.clear()
         # Real targets
         ax.plot(room_grid[0, true_x], room_grid[1, true_x], 's', markersize=9, 
@@ -169,16 +171,15 @@ def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_sensors_un
         ax.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 'x', markersize=9, 
                 markeredgecolor=np.array([255, 0, 0])/255, 
                 markerfacecolor=np.array([255, 255, 255])/255)
+        ax.set_title(f'Iteration: {k}')
 
         # Plot of sensors
         ax.scatter(sensor_coords[:, 0], sensor_coords[:, 1], s=50, c='pink', alpha=0.5, label='Sensors')
         # Plot of estimated sensors under attack
-        ax.plot(sensor_coords[estimated_attacked_sensors[0], 0], sensor_coords[estimated_attacked_sensors[0], 1], 'o', markersize=12, 
-                markeredgecolor=np.array([255, 0, 0])/255, 
-                markerfacecolor='none')
-        ax.plot(sensor_coords[estimated_attacked_sensors[1], 0], sensor_coords[estimated_attacked_sensors[1], 1], 'o', markersize=12, 
-                markeredgecolor=np.array([255, 0, 0])/255, 
-                markerfacecolor='none')
+        for attack_number in range(n_attacks):
+            ax.plot(sensor_coords[estimated_attacked_sensors[attack_number], 0], sensor_coords[estimated_attacked_sensors[attack_number], 1], 'o', markersize=12, 
+                    markeredgecolor=np.array([255, 0, 0])/255, 
+                    markerfacecolor='none')
         ax.grid(True)
         ax.legend(['True Targets', 'Estimated Targets', 'Sensors', 'Attacked sensors'], loc='best')
         ax.set_xticks(np.arange(100, 1001, 100))
@@ -189,3 +190,4 @@ def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_sensors_un
         ax.set_ylim([0, 1000])
         ax.set_aspect('equal', adjustable='box')
         plt.pause(0.5)
+        k+=1

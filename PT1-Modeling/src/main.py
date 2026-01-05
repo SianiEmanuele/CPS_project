@@ -293,7 +293,7 @@ def check_convergence(x_estimates, a_estimates, true_targets_locations, true_att
 
         # --- Attacks convergence check ---
         is_a_correct = np.array_equal(a_est_idx, attacked_sensors)
-        is_a_mantenance = np.array_equal(a_est_idx, prev_a_est_idx)
+        is_a_maintenance = np.array_equal(a_est_idx, prev_a_est_idx)
         # print('prev e current: ', prev_config, current_config_idx)
         # print('n_change_attacks: ', n_change_attacks)
         if n_change_attacks > 0 and current_config_idx != prev_config:
@@ -305,7 +305,7 @@ def check_convergence(x_estimates, a_estimates, true_targets_locations, true_att
             print('Maybe attacks convergence!')
             a_converged_status = True
             attacks_convergence_iteration.append(i)
-        elif a_converged_status and is_a_correct and not is_a_mantenance:
+        elif a_converged_status and is_a_correct and not is_a_maintenance:
             print('False allarm for attacks!')
             a_converged_status = False
             attacks_convergence_iteration.pop()
@@ -944,7 +944,8 @@ def task_4_optional(execute_part_1=True, execute_part_2=True, execute_part_3=Tru
             if len(attacked_sensors) == q:
                 print("-> SYSTEM ROBUST TO ALL SENSORS ATTACKED.")
                 break
-            
+            tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, n_attacks=len(attacked_sensors), title='OPTIONAL TASK PART 3')
+
             while next_sensor_to_add in attacked_sensors and next_sensor_to_add < q:
                     next_sensor_to_add += 1
             
@@ -952,8 +953,9 @@ def task_4_optional(execute_part_1=True, execute_part_2=True, execute_part_3=Tru
                 print(f"-> Adding Sensor {next_sensor_to_add}...")
                 attacked_sensors.append(next_sensor_to_add)
             else:
-                break 
-                
+                break
+
+
             print('\n===========================================================\n')
             # else:
             #     print("-> FAILURE: Lost track of targets.")
