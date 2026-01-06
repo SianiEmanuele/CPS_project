@@ -4,6 +4,19 @@ from numpy import linalg
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 
+def IST(x, gamma):
+    """
+    Implements the Iterative Soft Thresholding (IST).
+
+    Parameters:
+        x : Input array.
+        gamma : Threshold value.
+
+    Returns:
+        x : Output array after applying the IST algorithm.
+    """
+    return np.where(np.abs(x) > gamma, np.sign(x) * (np.abs(x) - gamma), 0)
+
 # ISTA algorithm returns the estimated x and its support
 def ISTA(x_0, C, tau, lam, y):
     """
@@ -39,18 +52,26 @@ def ISTA(x_0, C, tau, lam, y):
     support = np.where(x_k_1 != 0)[0]
     return x_k_1, support, num_iterations
 
-def IST(x, gamma):
-    """
-    Implements the Iterative Soft Thresholding (IST).
+def sparse_observer(n, q, A, G, tau, lam, y, K):
+    # Estimate x_tilda using ISTA
+    lam_weights = np.concatenate((np.full(n, 10), np.full(q,20)))
+    x_hat = []
+    a_hat = []
+    z_hat = []
 
-    Parameters:
-        x : Input array.
-        gamma : Threshold value.
+    z_0 = np.zeros(n+q)
+    x_hat.append(z_0[:n])
+    a_hat.append(z_0[n:])
+    z_hat.append(z_0)
 
-    Returns:
-        x : Output array after applying the IST algorithm.
-    """
-    return np.where(np.abs(x) > gamma, np.sign(x) * (np.abs(x) - gamma), 0)
+    for k in range(K-1):
+        z = z_hat[k] + (np.dot(tau, np.dot(G.T, (y[:,k] - np.dot(G, z_hat[k]))))) # Shrinkage and Threshold argument
+        gamma = tau * lam * lam_weights
+        z_hat_plus = IST(z, gamma)
+        x_hat.append(np.dot(A,z_hat_plus[:n]))
+        a_hat.append(z_hat_plus[n:])
+        z_hat.append(np.hstack((x_hat[k+1], a_hat[k+1])))
+    return x_hat, a_hat
 
 # ISTA algorithm returns the estimated x and its support
 def ISTA_task_5(x_0, C, tau, lam, y):
@@ -87,123 +108,90 @@ def ISTA_task_5(x_0, C, tau, lam, y):
     support = np.where(x_k_1 != 0)[0]
     return x_k_1, support, num_iterations, estimates_history
 
-def localization_plot(true_location, true_attacked_sensors, estimated_targets_location, estimated_attacked_sensors, sensor_coords, title=''):
+def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indices, max_iter=1000, tol=1e-8):
     """
-    Visualizes the spatial results of the localization algorithm within a 2D room grid.
-
-    Parameters:
-        true_location: Indices of the grid cells corresponding to the ground truth target positions.
-        estimated_targets_location: Indices of the grid cells corresponding to the estimated target positions.
-        estimated_attacked_sensors: Indices of the sensors identified as attacked.
-        sensor_coords: An array containing the (x, y) coordinates of all sensors in the network.
-        title: The title of the plot
+    Implements the Distributed ISTA (DISTA) algorithm for target localization and attack detection
     """
-    H, L, W = 10, 10, 100
-    n = H * L
-    room_grid = np.zeros((2, n))
-    for i in range(n):
-        room_grid[0, i] = W // 2 + (i % L) * W
-        room_grid[1, i] = W // 2 + (i // L) * W
+    z_nodes = np.zeros((q, n + q))
+    x_true = np.zeros(n)
+    for i in true_location_targets: x_true[i] = 1  # Creating the target ground truth matrix for targets
+    x_accuracy_list_main = []
+    # Values to determine if sistem reach consensus and converge and when
+    k_x_consensus = -1;
+    flag_x_cons = False
+    k_a_consensus = -1;
+    flag_a_cons = False
+    k_x_conver = -1;
+    flag_x_conv = False
+    k_a_conver = -1;
+    flag_a_conv = False
 
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.grid(True)
-    ax.set_title(title)
+    # ====== DISTA algorithm ======
+    # Local augmented matrices G_i
+    G_list = []
+    for i in range(q):
+        e_i = np.zeros(q)
+        e_i[i] = 1
+        G_i = np.hstack((D[i, :], e_i))
+        G_list.append(G_i)
 
-    # Colore azzurro target
-    target_color = np.array([40, 208, 220]) / 255
+    # Main Loop
+    for k in range(max_iter):
+        z_prev = np.copy(z_nodes)
+        z_new = np.zeros_like(z_nodes)
+        x_accuracy_list_local = []
+        # Consensus Step (Matrix Multiplication for efficiency)
+        Qz = np.dot(Q, z_prev)
 
-    # True Targets
-    ax.scatter(room_grid[0, true_location].flatten(),
-               room_grid[1, true_location].flatten(),
-               marker='s', s=100, c=[target_color], edgecolors=target_color,
-               label='True Targets', zorder=3)
+        # Local Loop (on each sensor)
+        for i in range(q):
+            G_i = G_list[i]
+            y_i = y[i]
+            z_i_k = z_prev[i, :]
 
-    # Estimated Targets
-    ax.scatter(room_grid[0, estimated_targets_location].flatten(),
-               room_grid[1, estimated_targets_location].flatten(),
-               marker='x', s=100, c='red',
-               label='Estimated Targets', zorder=4)
+            gradient_step = tau * G_i * (y_i - np.dot(G_i, z_i_k))
+            # Local Soft Thresholding argument
+            z = Qz[i, :] + gradient_step
+            # Local Soft Thresholding
+            z_new[i, :] = IST(z, tau * lam_vec)
 
-    # All Sensors
-    ax.scatter(sensor_coords[:, 0], sensor_coords[:, 1],
-               s=60, c='pink', alpha=0.4, label='Sensors', zorder=1)
+            # State accuracy calculation with l2-norm^2
+            x_accuracy = np.linalg.norm(z_new[i, :n] - x_true, 2) ** 2
+            x_accuracy_list_local.append(x_accuracy)
 
-    # Estimated Attacked Sensors
-    if len(estimated_attacked_sensors) > 0:
-        # Quelli che l'algoritmo PENSA siano attaccati (Cerchio Rosso)
-        ax.scatter(sensor_coords[estimated_attacked_sensors, 0],
-                   sensor_coords[estimated_attacked_sensors, 1],
-                   marker='o', s=200, facecolors='none', edgecolors='red',
-                   linewidths=1.5, label='Estimated Attacked Sensors', zorder=2)
+        x_accuracy_list_main.append(np.mean(x_accuracy_list_local))
+        # Stop Criterion calculation
+        diff_norm = np.sum([np.linalg.norm(z_new[i] - z_prev[i], 2) ** 2 for i in range(q)])
 
-    # True attacked sensors
-    if len(true_attacked_sensors) > 0:
-        ax.scatter(sensor_coords[true_attacked_sensors, 0],
-                   sensor_coords[true_attacked_sensors, 1],
-                   marker='*', s=60, c=[target_color],
-                   label='True Attacked Sensors', zorder=5)
+        # ====== PERFORMANCE METRICS ==========
+        if not (flag_x_conv and flag_a_conv):
+            x_is_cons, a_is_cons, x_idxs, a_idxs = check_support_consensus(z_new, n,
+                                                                           k_elements=2)  # Chec if system reacked consensus
+            # --- State ---
+            if x_is_cons:
+                if not flag_x_cons:  # consensus
+                    k_x_consensus = k
+                    flag_x_cons = True
+                if not flag_x_conv:  # convergence
+                    if np.array_equal(x_idxs, true_location_targets):
+                        k_x_conver = k
+                        flag_x_conv = True
+            # --- Attacks ---
+            if a_is_cons:
+                if not flag_a_cons:
+                    k_a_consensus = k
+                    flag_a_cons = True
+                if not flag_a_conv:
+                    if np.array_equal(a_idxs, true_attack_indices):
+                        k_a_conver = k
+                        flag_a_conv = True
 
-    ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1), borderaxespad=0.)
+        if diff_norm < tol:  # Staop criterion reached
+            return z_new, k, x_accuracy_list_main, k_x_consensus, k_a_consensus, k_x_conver, k_a_conver  # Return values if converge
 
-    # Formattazione assi
-    ax.set_xticks(np.arange(0, 1001, 100))
-    ax.set_yticks(np.arange(0, 1001, 100))
-    ax.set_xlabel('x (cm)')
-    ax.set_ylabel('y (cm)')
-    ax.set_xlim([0, 1000])
-    ax.set_ylim([0, 1000])
-    ax.set_aspect('equal')
-    plt.show()
+        z_nodes = z_new
 
-def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors, n_attacks=2, title=''):
-    L = 10
-    W = 100
-    k = 0
-    room_grid = np.zeros((2, n))
-    for i in range(n):
-        room_grid[0, i] = W//2 + (i % L) * W
-        room_grid[1, i] = W//2 + (i // L) * W
-    
-    fig, ax = plt.subplots(figsize=(12,6))
+        if k > 0 and k % 5000 == 0:
+            print(f"      Iter {k}: Diff Norm {diff_norm:.2e}")
 
-    for i in range(50):
-        true_location.append([x-1 for x in true_location[i]])
-
-    for x,true_x,a in zip(x_hat,true_location, a_hat):
-    
-        estimated_targets_location = np.argsort(x)[-3:]
-        estimated_attacked_sensors = np.argsort(np.abs(a))[-n_attacks:]
-        ax.clear()
-        # Real targets
-        ax.plot(room_grid[0, true_x], room_grid[1, true_x], 's', markersize=9, 
-                markeredgecolor=np.array([40, 208, 220])/255, 
-                markerfacecolor=np.array([40, 208, 220])/255)
-        #  Estimated targets
-        ax.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 'x', markersize=9, 
-                markeredgecolor=np.array([255, 0, 0])/255, 
-                markerfacecolor=np.array([255, 255, 255])/255)
-        ax.set_title(f'Iteration: {k}')
-
-        # Plot of sensors
-        ax.scatter(sensor_coords[:, 0], sensor_coords[:, 1], s=50, c='pink', alpha=0.5, label='Sensors')
-
-        # Plot of estimated sensors under attack
-        for attack_number in range(n_attacks):
-            ax.plot(sensor_coords[estimated_attacked_sensors[attack_number], 0], sensor_coords[estimated_attacked_sensors[attack_number], 1], 'o', markersize=12, 
-                    markeredgecolor=np.array([255, 0, 0])/255, 
-                    markerfacecolor='none')
-            ax.plot(sensor_coords[true_attacked_sensors[k][attack_number], 0],
-                    sensor_coords[true_attacked_sensors[k][attack_number], 1], '*', markersize=5,
-                    markeredgecolor=np.array([40, 208, 220])/255, 
-                    markerfacecolor=np.array([40, 208, 220])/255)
-        ax.grid(True)
-        ax.legend(['True Targets', 'Estimated Targets', 'Sensors', 'Estimated attacked sensors', 'Attacked sensors'], loc='upper left', bbox_to_anchor=(1.02, 1), borderaxespad=0.)
-        ax.set_xticks(np.arange(100, 1001, 100))
-        ax.set_yticks(np.arange(100, 1001, 100))
-        ax.set_xlabel('(cm)')
-        ax.set_ylabel('(cm)')
-        ax.set_xlim([0, 1000])
-        ax.set_ylim([0, 1000])
-        ax.set_aspect('equal', adjustable='box')
-        plt.pause(0.5)
-        k+=1
+    return z_nodes, max_iter, x_accuracy_list_main, k_x_consensus, k_a_consensus, k_x_conver, k_a_conver  # Return values if does not converge
