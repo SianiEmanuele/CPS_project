@@ -98,51 +98,62 @@ def localization_plot(true_location, true_attacked_sensors, estimated_targets_lo
         sensor_coords: An array containing the (x, y) coordinates of all sensors in the network.
         title: The title of the plot
     """
-    H = 10  # Grid's height (# celle)
-    L = 10  # Grid's length (# celle)
-    W = 100  # Cell's width (cm)
+    H, L, W = 10, 10, 100
     n = H * L
-
     room_grid = np.zeros((2, n))
-
     for i in range(n):
-        room_grid[0, i] = W//2 + (i % L) * W
-        room_grid[1, i] = W//2 + (i // L) * W
+        room_grid[0, i] = W // 2 + (i % L) * W
+        room_grid[1, i] = W // 2 + (i // L) * W
 
-    # --- 2. Plotting ---
-    plt.figure(figsize=(12, 6))
-    plt.grid(True)
-    plt.title(title)
-    # True targets location
-    plt.plot(room_grid[0, true_location], room_grid[1, true_location], 's', markersize=9, 
-            markeredgecolor=np.array([40, 208, 220])/255, 
-            markerfacecolor=np.array([40, 208, 220])/255)    
-    
-    # Estimated targets location
-    plt.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 'x', markersize=9, 
-            markeredgecolor=np.array([255, 0, 0])/255, 
-            markerfacecolor=np.array([255, 255, 255])/255)
+    fig, ax = plt.subplots(figsize=(12, 6))
+    ax.grid(True)
+    ax.set_title(title)
 
-    # Sensors
-    plt.scatter(sensor_coords[:, 0], sensor_coords[:, 1], s=50, c='pink', alpha=0.5, label='Sensors')
-    
-    # Estimated attacked sensors
+    # Colore azzurro target
+    target_color = np.array([40, 208, 220]) / 255
+
+    # True Targets
+    ax.scatter(room_grid[0, true_location].flatten(),
+               room_grid[1, true_location].flatten(),
+               marker='s', s=100, c=[target_color], edgecolors=target_color,
+               label='True Targets', zorder=3)
+
+    # Estimated Targets
+    ax.scatter(room_grid[0, estimated_targets_location].flatten(),
+               room_grid[1, estimated_targets_location].flatten(),
+               marker='x', s=100, c='red',
+               label='Estimated Targets', zorder=4)
+
+    # All Sensors
+    ax.scatter(sensor_coords[:, 0], sensor_coords[:, 1],
+               s=60, c='pink', alpha=0.4, label='Sensors', zorder=1)
+
+    # Estimated Attacked Sensors
     if len(estimated_attacked_sensors) > 0:
-        plt.plot(sensor_coords[estimated_attacked_sensors, 0], sensor_coords[estimated_attacked_sensors, 1], 'o', markersize=12, 
-                markeredgecolor=np.array([255, 0, 0])/255, 
-                markerfacecolor='none')
-        plt.plot(sensor_coords[true_attacked_sensors, 0],
-                    sensor_coords[true_attacked_sensors, 1], '*', markersize=5,
-                    markeredgecolor=np.array([40, 208, 220])/255, 
-                    markerfacecolor=np.array([40, 208, 220])/255)
+        # Quelli che l'algoritmo PENSA siano attaccati (Cerchio Rosso)
+        ax.scatter(sensor_coords[estimated_attacked_sensors, 0],
+                   sensor_coords[estimated_attacked_sensors, 1],
+                   marker='o', s=200, facecolors='none', edgecolors='red',
+                   linewidths=1.5, label='Estimated Attacked Sensors', zorder=2)
 
-    plt.xticks(np.arange(100, 1001, 100))
-    plt.yticks(np.arange(100, 1001, 100))
-    plt.xlabel('(cm)')
-    plt.ylabel('(cm)')
-    plt.axis([0, 1000, 0, 1000])
-    plt.legend(['True Targets', 'Estimated Targets', 'Sensors', 'Estimated attacked sensors', 'Attacked sensors'], loc='upper left', bbox_to_anchor=(1.02, 1), borderaxespad=0.)
-    plt.gca().set_aspect('equal', adjustable='box')
+    # True attacked sensors
+    if len(true_attacked_sensors) > 0:
+        ax.scatter(sensor_coords[true_attacked_sensors, 0],
+                   sensor_coords[true_attacked_sensors, 1],
+                   marker='*', s=60, c=[target_color],
+                   label='True Attacked Sensors', zorder=5)
+
+    ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1), borderaxespad=0.)
+
+    # Formattazione assi
+    ax.set_xticks(np.arange(0, 1001, 100))
+    ax.set_yticks(np.arange(0, 1001, 100))
+    ax.set_xlabel('x (cm)')
+    ax.set_ylabel('y (cm)')
+    ax.set_xlim([0, 1000])
+    ax.set_ylim([0, 1000])
+    ax.set_aspect('equal')
+    plt.show()
 
 def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors, n_attacks=2, title=''):
     H = 10
@@ -163,7 +174,6 @@ def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_s
     
         estimated_targets_location = np.argsort(x)[-3:]
         estimated_attacked_sensors = np.argsort(np.abs(a))[-n_attacks:]
-        print("Iteration: ", k ,"| Estimated attacked sensors: ", estimated_attacked_sensors)
         ax.clear()
         # Real targets
         ax.plot(room_grid[0, true_x], room_grid[1, true_x], 's', markersize=9, 

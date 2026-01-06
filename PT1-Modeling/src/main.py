@@ -769,7 +769,7 @@ def task_4():
     lam = 1
     x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
     # Create the graph with moving targets
-    tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, title='')
+    tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors=K*[(11, 15)] , title='')
     plt.show()
     return
 
@@ -958,7 +958,7 @@ def task_5():
 if __name__ == "__main__":
     # task_1()
     # task_2()
-    task_3()
-    # task_4()
+    # task_3()
+    task_4()
     # task_4_optional()
     # task_5()
