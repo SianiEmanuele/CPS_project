@@ -1,4 +1,3 @@
-import os as os
 import random
 
 from utils import *
