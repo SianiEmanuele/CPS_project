@@ -800,7 +800,7 @@ def task_4():
     x_hat, a_hat = sparse_observer(n, q, A, G, tau, lam, y, K)
 
     # Plot results
-    # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors=K*attacked_sensors, title='')
+    tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors=K*attacked_sensors, title='')
 
     # Check convergence
     check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=2)
@@ -812,10 +812,10 @@ def task_4():
     print('\n===== OPTIONAL TASK PART 1 - Aware time-invariant attacks =====')
     # Create the vector of measurement corrupted with attacks
     y = np.zeros((q, K))
-
     for i in range(K):
+        eta = 10**(-2) * np.random.randn()
         # Calculate the "clean" measurements
-        y[:, i] = np.dot(D, x_true[i, :])
+        y[:, i] = np.dot(D, x_true[i, :]) + eta
 
         # AWARE attacks
         y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i]
@@ -824,8 +824,8 @@ def task_4():
     x_hat, a_hat = sparse_observer(n, q, A, G, tau, lam, y, K)
     check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=2)
 
-    # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors=K * [attacked_sensors[0]],
-    #               title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
+    tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors=K * [attacked_sensors[0]],
+                  title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
     plt.show()
 
 
@@ -840,7 +840,8 @@ def task_4():
     y = np.zeros((q, K))
     for i in range(K):
         # Calculate the "clean" measurements
-        y[:, i] = np.dot(D, x_true[i, :])
+        eta = 10**(-2) * np.random.randn()
+        y[:, i] = np.dot(D, x_true[i, :]) + eta
 
         # Change the attacked sensors for the second half iterations
         current_phase_idx = i // interval_step
@@ -857,9 +858,9 @@ def task_4():
     check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=2, n_change_attacks=len(attacked_sensors))
 
     # Plot
-    # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords,
-    #               true_attacked_sensors=int(K / 2) * [attacked_sensors[0]] + int(K / 2) * [attacked_sensors[1]],
-    #               title='OPTIONAL TASK PART 2')
+    tracking_plot(n, true_location, x_hat, a_hat, sensor_coords,
+                  true_attacked_sensors=int(K / 2) * [attacked_sensors[0]] + int(K / 2) * [attacked_sensors[1]],
+                  title='OPTIONAL TASK PART 2')
     plt.show()
 
 
@@ -887,7 +888,8 @@ def task_4():
 
             y = np.zeros((q, K))
             for i in range(K):
-                y[:, i] = np.dot(D, x_true[i, :])
+                eta = 10**(-2) * np.random.randn()
+                y[:, i] = np.dot(D, x_true[i, :]) + eta
                 for sensor_idx in attacked_sensors:
                     # Aware => a==0.5y
                     if attack_type == 'AWARE':
@@ -960,8 +962,8 @@ def task_5():
 
 
 if __name__ == "__main__":
-    task_1()
-    task_2()
-    task_3()
+    # task_1()
+    # task_2()
+    # task_3()
     task_4()
-    task_5()
+    # task_5()
