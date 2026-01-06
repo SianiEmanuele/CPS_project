@@ -1,6 +1,5 @@
 import random
-
-from utils import *
+from utils.utilities import *
 import scipy.io as sio
 from scipy import stats
 
@@ -252,12 +251,6 @@ def task_3():
 
     # Extract the estimated targets' location by taking the 3 greatest values of the first n elements of w_estimated
     estimated_targets_location = np.argsort(w_estimated[:n])[-3:]
-    x_estimated = w_estimated[:n]
-
-    x_true = np.zeros(n)
-    for i in true_location: x_true[i]=1
-    accuracy = np.linalg.norm(x_true - x_estimated)**2
-    print('accuracy: ', accuracy)
 
     # Extract the estimated attacked vectors from the support of the last q eleemnts of w_estimated
     estimated_attacked_sensors = np.where(w_estimated[n:] != 0)[0]
@@ -470,8 +463,8 @@ def task_5():
 
 
 if __name__ == "__main__":
-    task_1()
-    task_2()
+    # task_1()
+    # task_2()
     task_3()
-    task_4()
-    task_5()
+    # task_4()
+    # task_5()
