@@ -103,7 +103,21 @@ def Localization_with_attacks(n, q, G, tau, lam, y):
 
     return w_estimated, w_estimated_supp, iterations
 
-def observer(n, q, A, G, tau, lam, y, K):
+def plot_convergence_iterations(attacked_sensors, x_results, a_results, attack_type):
+    x = range(1,len(attacked_sensors))
+
+    plt.figure()
+    plt.plot(x, x_results, marker='o', label='x convergence iterations')
+    plt.plot(x, a_results, marker='s', label='a convergence iterations')
+
+    plt.xlabel('Number of Attacked Sensors')
+    plt.ylabel('Convergence Iterations')
+    plt.title(f'{attack_type} | Convergence vs Number of Attacked Sensors')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+def sparse_observer(n, q, A, G, tau, lam, y, K):
     # Estimate x_tilda using ISTA
     lam_weights = np.concatenate((np.full(n, 10), np.full(q,20)))
     x_hat = []
@@ -294,6 +308,10 @@ def check_convergence(x_estimates, a_estimates, true_targets_locations, true_att
         prev_a_est_idx = a_est_idx
         prev_config = current_config_idx if n_change_attacks != 0 else 0 # Calculating current x estimation index from previous
         i = i+1
+
+    print(f'x_conv: {x_converged_status}, state_convergence_iteration: {state_convergence_iteration}')
+    print(f'a_conv: {a_converged_status}, attacks_convergence_iteration: {attacks_convergence_iteration}')
+    print('-----------------------------------------------\n')
     return x_converged_status, a_converged_status, state_convergence_iteration, attacks_convergence_iteration
 
 def Localization_with_attacks_task_5(n, q, G, tau, lam, y, true_location_targets, true_attack_indices):
@@ -398,7 +416,7 @@ def distributed_localization():
         # Calculate MEAN error across all nodes for each iteration
         x_all_topologies_accuracy.append(x_acc_array)
 
-        localization_plot(true_location, estimated_targets_location, estimated_attacked_sensors, sensor_coords, title=f"{topologies_names[i]}\nStop criteria reached at iter: {stop_criteria_iter}")
+        localization_plot(true_location, true_attack_indices, estimated_targets_location, estimated_attacked_sensors, sensor_coords, title=f"{topologies_names[i]}\nStop criteria reached at iter: {stop_criteria_iter}")
         print('\n --------------------------------------------------- \n')
 
     # STATE ACCURACY PLOT
@@ -410,14 +428,7 @@ def distributed_localization():
     
     for i, acc_curve in enumerate(x_all_topologies_accuracy):
         current_len = len(acc_curve)
-        pad_width = max_len_x - current_len
-        # Add padding to the curves to make them equal length
-        if pad_width > 0:
-            padded_acc = np.pad(acc_curve, (0, pad_width), mode='edge')
-        else:
-            padded_acc = acc_curve
-            
-        plt.plot(padded_acc, label=topologies_names[i], color=colors[i % len(colors)], linewidth=0.5)
+        plt.plot(acc_curve, label=topologies_names[i], color=colors[i % len(colors)], linewidth=0.5)
         plt.plot(current_len-1, acc_curve[-1], 'o', color=colors[i % len(colors)])
 
     plt.title('State Accuracy (Distributed)')
@@ -470,7 +481,7 @@ def centralized_localization():
     print("Generating Plots...")
 
     # --- PLOTTING ---
-    localization_plot(true_location, estimated_targets_location, estimated_attacked_sensors, sensor_coords)
+    localization_plot(true_location, true_attack_indices, estimated_targets_location, estimated_attacked_sensors, sensor_coords)
 
     # State Accuracy Plot
     plt.figure(figsize=(10, 6))
@@ -488,6 +499,7 @@ def centralized_localization():
 
 ############################### TASK 1 ##################################################
 def task_1():
+    print('\n========== TASK 1 ==========')
 
     q=10
     p=20
@@ -641,6 +653,8 @@ def task_1():
 
 ############################### TASK 2 ##################################################
 def task_2():
+    print('\n========== TASK 2 ==========')
+
     runs=1000
     q=20
     p=10
@@ -703,6 +717,8 @@ def task_2():
 
 ############################### TASK 3 ##################################################
 def task_3():
+    print('\n========== TASK 3 ==========')
+
     true_location = []
     true_attacked_sensors = []
     true_location.append([22,35,86])
@@ -729,13 +745,11 @@ def task_3():
     # Extract the estimated targets' location by taking the 3 greatest values of the first n elements of w_estimated
     estimated_targets_location = np.argsort(w_estimated[:n])[-3:]
     x_estimated = w_estimated[:n]
-    print('x_estimated: ', x_estimated)
 
     x_true = np.zeros(n)
     for i in true_location: x_true[i]=1
     accuracy = np.linalg.norm(x_true - x_estimated)**2
     print('accuracy: ', accuracy)
-
 
     # Extract the estimated attacked vectors from the support of the last q eleemnts of w_estimated
     estimated_attacked_sensors = np.where(w_estimated[n:] != 0)[0]
@@ -748,6 +762,10 @@ def task_3():
 
 ############################### TASK 4 ##################################################
 def task_4():
+
+    #################################################### MANDATORY PART ###############################################
+    print('\n===== TASK 4 - MANDATORY PART =====')
+
     np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
     cwd = os.getcwd()
     mat = sio.loadmat(cwd + r'/utils/tracking_moving_targets.mat')
@@ -761,39 +779,14 @@ def task_4():
 
     G = np.hstack((D, np.eye(q)))
     G = stats.zscore(G, axis=0)
+
+    tau = 1 / (np.linalg.norm(G, ord=2)**2) - 10**(-8)
+    lam = 1
 
     true_location = []
-    true_location.append([21,34,85])
-
-    tau = 1 / (np.linalg.norm(G, ord=2)**2) - 10**(-8)
-    lam = 1
-    x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
-    # Create the graph with moving targets
-    tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors=K*[(11, 15)] , title='')
-    plt.show()
-    return
-
-############################### TASK 4 OPTIONAL #########################################
-def task_4_optional(execute_part_1=True, execute_part_2=True, execute_part_3=True):
-    np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
-    cwd = os.getcwd()
-    mat = sio.loadmat(cwd + r'/utils/tracking_moving_targets.mat')
-
-    A = mat['A']
-    y = mat['Y']
-    D = mat['D']
-    n = D.shape[1]
-    q = D.shape[0]
-    K = y.shape[1]
-    G = np.hstack((D, np.eye(q)))
-    G = stats.zscore(G, axis=0)
-
-    tau = 1 / (np.linalg.norm(G, ord=2)**2) - 10**(-8)
-    lam = 1
-    attacked_sensors = [(11, 15)] 
+    attacked_sensors = [(11, 15)]
     x_true = np.zeros((K,n))
-    true_location = []
-    true_location.append([21,34,85]) # Changed targets values due to python and matlab mismatch
+    true_location.append([21,34,85]) # Changed targets values due to python and matlab mismatch (-1 index)
 
     # Set the ground truth state vector
     for loc in true_location:
@@ -802,113 +795,138 @@ def task_4_optional(execute_part_1=True, execute_part_2=True, execute_part_3=Tru
     for i in range(K-1):
         x_true[i+1,:] = np.dot(A, x_true[i,:])
 
-    x_hat_unaware, a_hat_unaware = observer(n, q, A, G, tau, lam, y, K)
-    x_conv, a_conv, state_convergence_iteration, attacks_convergence_iteration = check_convergence(x_hat_unaware, a_hat_unaware, x_true, attacked_sensors, n_targets=3, n_attacks=2)
-    print(f'x_conv: {x_conv}, state_convergence_iteration: {state_convergence_iteration}')
-    print(f'a_conv: {a_conv}, attacks_convergence_iteration: {attacks_convergence_iteration}')
-    print('-----------------------------------------------\n')
+
+    # Calculates estimates
+    x_hat, a_hat = sparse_observer(n, q, A, G, tau, lam, y, K)
+
+    # Plot results
+    # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors=K*attacked_sensors, title='')
+
+    # Check convergence
+    check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=2)
     plt.show()
 
-    # ======== OPTIONAL TASK PART 1 ========
-    if execute_part_1 == True:
-        print('\n===== OPTIONAL TASK PART 1 =====')
-        # Create the vector of measurement corrupted with attacks
-        y = np.zeros((q, K))
 
-        for i in range(K):
-            # Calculate the "clean" measurements
-            y[:, i] = np.dot(D, x_true[i, :])
-            # Add the attacks onn sensor 11 and 15
-            # Attack on Sensor 11
-            y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i]
-            # Attack on Sensor 15
-            y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
 
-        x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
+    ############################# OPTIONAL TASK PART 1 - Aware time-invariant attacks ##################################
+    print('\n===== OPTIONAL TASK PART 1 - Aware time-invariant attacks =====')
+    # Create the vector of measurement corrupted with attacks
+    y = np.zeros((q, K))
 
-        x_conv_1, a_conv_1, state_convergence_iteration_1, attacks_convergence_iteration_1 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=2)
-        print(f'x_conv: {x_conv_1}, state_convergence_iteration: {state_convergence_iteration_1}')
-        print(f'a_conv: {a_conv_1}, attacks_convergence_iteration: {attacks_convergence_iteration_1}')
-        tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors=K*[attacked_sensors[0]], title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
-        print('-----------------------------------------------\n')
-        plt.show()
+    for i in range(K):
+        # Calculate the "clean" measurements
+        y[:, i] = np.dot(D, x_true[i, :])
 
-    # ===== OPTIONAL TASK PART 2 =====
-    if execute_part_2 == True:
-        print('\n===== OPTIONAL TASK PART 2 =====')
-        attacked_sensors = [(11, 15), (8, 17)]
-        # attacked_sensors = [(11, 15), (8, 17), (2, 5), (7, 12), (1, 10)]
-        num_phases = len(attacked_sensors)
-        interval_step = K // num_phases
-        y = np.zeros((q, K))
-        for i in range(K):
-            # Calculate the "clean" measurements
-            y[:, i] = np.dot(D, x_true[i, :])
-            # Change the attacked sensors for the second half iterations
-            current_phase_idx = i // interval_step
-            current_phase_idx = min(current_phase_idx, num_phases - 1)
-            current_sensors = attacked_sensors[current_phase_idx]
-            # Add the attacks
-            y[current_sensors[0], i] += 0.5 * y[current_sensors[0], i]
-            y[current_sensors[1], i] += 0.5 * y[current_sensors[1], i]
+        # AWARE attacks
+        y[attacked_sensors[0][0], i] += 0.5 * y[attacked_sensors[0][0], i]
+        y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
 
-        x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
-        x_conv_2, a_conv_2, state_convergence_iteration_2, attacks_convergence_iteration_2 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=2, n_change_attacks=len(attacked_sensors))
-        print(f'x_conv: {x_conv_2}, state_convergence_iteration: {state_convergence_iteration_2}')
-        print(f'a_conv: {a_conv_2}, attacks_convergence_iteration: {attacks_convergence_iteration_2}')
-        print('-----------------------------------------------\n')
-        tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors=int(K/2)*[attacked_sensors[0]]+int(K/2)*[attacked_sensors[1]],title='OPTIONAL TASK PART 2')
-        plt.show()
+    x_hat, a_hat = sparse_observer(n, q, A, G, tau, lam, y, K)
+    check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=2)
 
-    # ===== OPTIONAL TASK PART 3 =====
-    if execute_part_3 == True:
-        print('===== OPTIONAL TASK PART 3 =====')
-        true_location_list = [21, 34, 85] 
-        initial_targets = np.atleast_1d(np.array(true_location_list))
+    # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors=K * [attacked_sensors[0]],
+    #               title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
+    plt.show()
+
+
+
+    ############################# OPTIONAL TASK PART 2 - Aware time-varying attacks ##################################
+    print('\n===== OPTIONAL TASK PART 2 - Aware time-varying attacks =====')
+    attacked_sensors = [(11, 15), (8, 17)]
+
+    # 2 phases -> 2 couples of attacked sensors, attack is held for K/2
+    num_phases = len(attacked_sensors)
+    interval_step = K // num_phases
+    y = np.zeros((q, K))
+    for i in range(K):
+        # Calculate the "clean" measurements
+        y[:, i] = np.dot(D, x_true[i, :])
+
+        # Change the attacked sensors for the second half iterations
+        current_phase_idx = i // interval_step
+        current_phase_idx = min(current_phase_idx, num_phases - 1)
+        current_sensors = attacked_sensors[current_phase_idx]
+
+        # AWARE attacks
+        y[current_sensors[0], i] += 0.5 * y[current_sensors[0], i]
+        y[current_sensors[1], i] += 0.5 * y[current_sensors[1], i]
+
+    # Calculate estimates
+    x_hat, a_hat = sparse_observer(n, q, A, G, tau, lam, y, K)
+    # Calculate convergence
+    check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=2, n_change_attacks=len(attacked_sensors))
+
+    # Plot
+    # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords,
+    #               true_attacked_sensors=int(K / 2) * [attacked_sensors[0]] + int(K / 2) * [attacked_sensors[1]],
+    #               title='OPTIONAL TASK PART 2')
+    plt.show()
+
+
+    ################### OPTIONAL TASK PART 3 - Aware vs Unaware attacks on increasing number of sensors #########################
+    print('===== OPTIONAL TASK PART 3 - Aware vs Unaware attacks on increasing number of sensors =====')
+
+   
+
+    for attack_type in ["AWARE", "UNAWARE"]:
+        print("======= Attack type: ", attack_type, " =======")
+        # Attack sensors in random order
         attacked_sensors = []
-
         all_sensors = [i for i in range(25)]
+        random.seed(42)
         random.shuffle(all_sensors)
-        next_sensor_to_add = 0
 
         for _ in range(2):
             attacked_sensors.append(all_sensors.pop(0))
-        
-        x_true_moving = np.zeros((n, K))
-        
-        for i in range(K):
-            current_indices = (initial_targets - i) % n 
-            x_true_moving[current_indices, i] = 1
 
+        # continue attacks until all sensors are under attack
+        x_convergence_iterations = []
+        a_convergence_iterations= []
         while len(attacked_sensors) <= q:
             print(f"\n--- Iteration with {len(attacked_sensors)} Attacked Sensors: {attacked_sensors} ---")
 
             y = np.zeros((q, K))
             for i in range(K):
-                y[:, i] = np.dot(D, x_true_moving[:, i])
+                y[:, i] = np.dot(D, x_true[i, :])
                 for sensor_idx in attacked_sensors:
-                    # AWARE
-                    # y[sensor_idx, i] += 0.5 * y[sensor_idx, i]
-                    y_mean = np.mean(y[:, i])
-                    a = np.random.uniform(0.9 * y_mean, 1.1 * y_mean)
+                    # Aware => a==0.5y
+                    if attack_type == 'AWARE':
+                        a = 0.5 * y[sensor_idx, i]
+                    
+                    # Unaware -> a== random between 90% and 110% of the mean of the measurements
+                    else:
+                        y_mean = np.mean(y[:, i])
+                        a = np.random.uniform(0.9 * y_mean, 1.1 * y_mean)
+
                     y[sensor_idx, i] += a
 
-            x_hat, a_hat = observer(n, q, A, G, tau, lam, y, K)
-            x_conv_3, a_conv_3, state_convergence_iteration_3, attacks_convergence_iteration_3 = check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=len(attacked_sensors))
-            print(f'x_conv: {x_conv_3}, state_convergence_iteration: {state_convergence_iteration_3}')
-            print(f'a_conv: {a_conv_3}, attacks_convergence_iteration: {attacks_convergence_iteration_3}')
-            tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors=K*[attacked_sensors],n_attacks=len(attacked_sensors), title='OPTIONAL TASK PART 3')
+            # Calculates estimates
+            x_hat, a_hat = sparse_observer(n, q, A, G, tau, lam, y, K)
+            x_converged, a_converged, x_iteration, a_iteration = check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=len(attacked_sensors))
+            
+            x_convergence_iterations.append(x_iteration if x_converged else None)
+            a_convergence_iterations.append(a_iteration.pop() if a_converged else None)
+
+
+            # tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors=K *[attacked_sensors],
+            #               n_attacks=len(attacked_sensors), title='OPTIONAL TASK PART 3')
+
             plt.show()
 
             if len(attacked_sensors) == q:
                 break
 
-            next_sensor_to_add = all_sensors.pop(0)
-            attacked_sensors.append((next_sensor_to_add))
+            next_sensor_to_attack = all_sensors.pop(0)
+            attacked_sensors.append(next_sensor_to_attack)
             print('\n===========================================================\n')
+
+        plot_convergence_iterations(attacked_sensors, x_convergence_iterations, a_convergence_iterations, attack_type)
+    return
 
 ############################### TASK 5 ##################################################
 def task_5():
+    print('\n========== TASK 5 ==========')
+
     print("DISTRIBUTED SYSTEM TASK 5")
     dist_x_curves, top_names = distributed_localization()
     print("CENTRALIZED SYSTEM TASK 5")
@@ -918,33 +936,19 @@ def task_5():
     
     # PLOT STATE ACCURACY
     plt.figure(figsize=(12, 7))
-    all_curves_x = dist_x_curves + [cent_x_curve]
-    max_len_x = max(len(c) for c in all_curves_x)
 
     # Plot distributed curves
     for i, acc_curve in enumerate(dist_x_curves):
         # Add padding to curves
         current_len = len(acc_curve)
-        pad_width = max_len_x - current_len
-        
-        if pad_width > 0:
-            padded_acc = np.pad(acc_curve, (0, pad_width), mode='edge')
-        else:
-            padded_acc = acc_curve
-            
-        plt.plot(padded_acc, label=f"Dist. {top_names[i]}", color=colors[i % len(colors)], linewidth=0.5, alpha=0.7)
+
+        plt.plot(acc_curve, label=f"Dist. {top_names[i]}", color=colors[i % len(colors)], linewidth=0.5, alpha=0.7)
         plt.plot(current_len-1, acc_curve[-1], 'o', color=colors[i % len(colors)], alpha=0.6, markersize=3)
 
     # Plot centralized curves
     curr_len_c = len(cent_x_curve)
-    pad_width_c = max_len_x - curr_len_c
-    # Add padding to curves
-    if pad_width_c > 0:
-        padded_cent = np.pad(cent_x_curve, (0, pad_width_c), mode='edge')
-    else:
-        padded_cent = cent_x_curve
 
-    plt.plot(padded_cent, label="Centralized (Fusion Center)", color=cent_color, linewidth=1)
+    plt.plot(cent_x_curve, label="Centralized (Fusion Center)", color=cent_color, linewidth=1)
     plt.plot(curr_len_c-1, cent_x_curve[-1], 'D', color=cent_color, markersize=3)
     plt.title('GRAND FINAL: State Accuracy (Distributed vs Centralized)')
     plt.xlabel('Iterations')
@@ -956,9 +960,8 @@ def task_5():
 
 
 if __name__ == "__main__":
-    # task_1()
-    # task_2()
-    # task_3()
+    task_1()
+    task_2()
+    task_3()
     task_4()
-    # task_4_optional()
-    # task_5()
+    task_5()

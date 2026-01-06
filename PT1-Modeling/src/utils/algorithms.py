@@ -156,7 +156,6 @@ def localization_plot(true_location, true_attacked_sensors, estimated_targets_lo
     plt.show()
 
 def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors, n_attacks=2, title=''):
-    H = 10
     L = 10
     W = 100
     k = 0
