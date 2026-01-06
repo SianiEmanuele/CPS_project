@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from numpy import linalg
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 # ISTA algorithm returns the estimated x and its support
 def ISTA(x_0, C, tau, lam, y):
@@ -86,7 +87,7 @@ def ISTA_task_5(x_0, C, tau, lam, y):
     support = np.where(x_k_1 != 0)[0]
     return x_k_1, support, num_iterations, estimates_history
 
-def localization_plot(true_location, estimated_targets_location, estimated_attacked_sensors, sensor_coords, title=''):
+def localization_plot(true_location, true_attacked_sensors, estimated_targets_location, estimated_attacked_sensors, sensor_coords, title=''):
     """
     Visualizes the spatial results of the localization algorithm within a 2D room grid.
 
@@ -109,20 +110,18 @@ def localization_plot(true_location, estimated_targets_location, estimated_attac
         room_grid[1, i] = W//2 + (i // L) * W
 
     # --- 2. Plotting ---
-    plt.figure(figsize=(7, 7))
+    plt.figure(figsize=(12, 6))
     plt.grid(True)
     plt.title(title)
     # True targets location
     plt.plot(room_grid[0, true_location], room_grid[1, true_location], 's', markersize=9, 
             markeredgecolor=np.array([40, 208, 220])/255, 
-            markerfacecolor=np.array([40, 208, 220])/255,
-            label='True Targets')    
+            markerfacecolor=np.array([40, 208, 220])/255)    
     
     # Estimated targets location
     plt.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 'x', markersize=9, 
             markeredgecolor=np.array([255, 0, 0])/255, 
-            markerfacecolor=np.array([255, 255, 255])/255,
-            label='Estimated Targets')
+            markerfacecolor=np.array([255, 255, 255])/255)
 
     # Sensors
     plt.scatter(sensor_coords[:, 0], sensor_coords[:, 1], s=50, c='pink', alpha=0.5, label='Sensors')
@@ -131,18 +130,21 @@ def localization_plot(true_location, estimated_targets_location, estimated_attac
     if len(estimated_attacked_sensors) > 0:
         plt.plot(sensor_coords[estimated_attacked_sensors, 0], sensor_coords[estimated_attacked_sensors, 1], 'o', markersize=12, 
                 markeredgecolor=np.array([255, 0, 0])/255, 
-                markerfacecolor='none',
-                label='Attacked sensors')
+                markerfacecolor='none')
+        plt.plot(sensor_coords[true_attacked_sensors, 0],
+                    sensor_coords[true_attacked_sensors, 1], '*', markersize=5,
+                    markeredgecolor=np.array([40, 208, 220])/255, 
+                    markerfacecolor=np.array([40, 208, 220])/255)
 
     plt.xticks(np.arange(100, 1001, 100))
     plt.yticks(np.arange(100, 1001, 100))
     plt.xlabel('(cm)')
     plt.ylabel('(cm)')
     plt.axis([0, 1000, 0, 1000])
-    plt.legend(loc='upper left')
+    plt.legend(['True Targets', 'Estimated Targets', 'Sensors', 'Estimated attacked sensors', 'Attacked sensors'], loc='upper left', bbox_to_anchor=(1.02, 1), borderaxespad=0.)
     plt.gca().set_aspect('equal', adjustable='box')
 
-def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, n_attacks=2, title=''):
+def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, true_attacked_sensors, n_attacks=2, title=''):
     H = 10
     L = 10
     W = 100
@@ -152,7 +154,7 @@ def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, n_attacks=2, ti
         room_grid[0, i] = W//2 + (i % L) * W
         room_grid[1, i] = W//2 + (i // L) * W
     
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(12,6))
 
     for i in range(50):
         true_location.append([x-1 for x in true_location[i]])
@@ -175,13 +177,18 @@ def tracking_plot(n, true_location, x_hat, a_hat, sensor_coords, n_attacks=2, ti
 
         # Plot of sensors
         ax.scatter(sensor_coords[:, 0], sensor_coords[:, 1], s=50, c='pink', alpha=0.5, label='Sensors')
+
         # Plot of estimated sensors under attack
         for attack_number in range(n_attacks):
             ax.plot(sensor_coords[estimated_attacked_sensors[attack_number], 0], sensor_coords[estimated_attacked_sensors[attack_number], 1], 'o', markersize=12, 
                     markeredgecolor=np.array([255, 0, 0])/255, 
                     markerfacecolor='none')
+            ax.plot(sensor_coords[true_attacked_sensors[k][attack_number], 0],
+                    sensor_coords[true_attacked_sensors[k][attack_number], 1], '*', markersize=5,
+                    markeredgecolor=np.array([40, 208, 220])/255, 
+                    markerfacecolor=np.array([40, 208, 220])/255)
         ax.grid(True)
-        ax.legend(['True Targets', 'Estimated Targets', 'Sensors', 'Attacked sensors'], loc='best')
+        ax.legend(['True Targets', 'Estimated Targets', 'Sensors', 'Estimated attacked sensors', 'Attacked sensors'], loc='upper left', bbox_to_anchor=(1.02, 1), borderaxespad=0.)
         ax.set_xticks(np.arange(100, 1001, 100))
         ax.set_yticks(np.arange(100, 1001, 100))
         ax.set_xlabel('(cm)')
