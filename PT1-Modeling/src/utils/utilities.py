@@ -2,7 +2,8 @@ import os as os
 import scipy.io as sio
 
 from .plots import *
-from .algorithms import *
+from .algorithms import ISTA, ISTA_task_5, DISTA
+
 def ISTA_runs(runs, p, q, C, tau, lam, x_sparsity):
     # parameters definition with suggested settings
     q = q
@@ -31,7 +32,6 @@ def ISTA_runs(runs, p, q, C, tau, lam, x_sparsity):
         if np.array_equal(x_tilda_supports[j], x_estimated_supports[j]):
             correct_estimations += 1
     return correct_estimations, num_iterations, x_estimated
-
 
 def ISTA_runs_with_attacks(runs, n, q, C, tau, lam, x_sparsity, a_sparsity, attack_type, noisy):
     correct_estimations = 0
@@ -84,7 +84,6 @@ def ISTA_runs_with_attacks(runs, n, q, C, tau, lam, x_sparsity, a_sparsity, atta
     attack_detection_rate = correct_estimations / (runs - 20)
 
     return attack_detection_rate, num_iterations, estimation_accuracy
-
 
 def Localization_with_attacks(n, q, G, tau, lam, y):
     # Estimate x_tilda using ISTA
@@ -187,7 +186,6 @@ def check_convergence(x_estimates, a_estimates, true_targets_locations, true_att
     print('-----------------------------------------------\n')
     return x_converged_status, a_converged_status, state_convergence_iteration, attacks_convergence_iteration
 
-
 def Localization_with_attacks_task_5(n, q, G, tau, lam, y, true_location_targets, true_attack_indices):
     lam_weights = np.concatenate((np.full(n, 10), np.full(q, 0.1)))
     final_lam = lam * lam_weights
@@ -206,10 +204,9 @@ def Localization_with_attacks_task_5(n, q, G, tau, lam, y, true_location_targets
     for w_step in history:
         x_est = w_step[:n]
         # Calculating accuracy
-        x_acc_hist.append(np.linalg.norm(x_est - x_true, 2))
+        x_acc_hist.append(np.linalg.norm(x_est - x_true, 2)**2)
 
     return w_estimated, w_estimated_supp, iterations, x_acc_hist
-
 
 def distributed_localization():
     """
@@ -319,7 +316,6 @@ def distributed_localization():
     plt.show()
 
     return x_all_topologies_accuracy, topologies_names
-
 
 def centralized_localization():
     np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})

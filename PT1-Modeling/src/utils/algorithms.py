@@ -1,8 +1,6 @@
-import pandas as pd
-import numpy as np
 from numpy import linalg
-import matplotlib.pyplot as plt
-from matplotlib.lines import Line2D
+
+from .utilities import *
 
 def IST(x, gamma):
     """
@@ -117,13 +115,13 @@ def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indice
     for i in true_location_targets: x_true[i] = 1  # Creating the target ground truth matrix for targets
     x_accuracy_list_main = []
     # Values to determine if sistem reach consensus and converge and when
-    k_x_consensus = -1;
+    k_x_consensus = -1
     flag_x_cons = False
-    k_a_consensus = -1;
+    k_a_consensus = -1
     flag_a_cons = False
-    k_x_conver = -1;
+    k_x_conver = -1
     flag_x_conv = False
-    k_a_conver = -1;
+    k_a_conver = -1
     flag_a_conv = False
 
     # ====== DISTA algorithm ======
@@ -165,8 +163,7 @@ def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indice
 
         # ====== PERFORMANCE METRICS ==========
         if not (flag_x_conv and flag_a_conv):
-            x_is_cons, a_is_cons, x_idxs, a_idxs = check_support_consensus(z_new, n,
-                                                                           k_elements=2)  # Chec if system reacked consensus
+            x_is_cons, a_is_cons, x_idxs, a_idxs = check_support_consensus(z_new, n,k_elements=2)  # Check if system reached consensus
             # --- State ---
             if x_is_cons:
                 if not flag_x_cons:  # consensus
@@ -186,7 +183,7 @@ def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indice
                         k_a_conver = k
                         flag_a_conv = True
 
-        if diff_norm < tol:  # Staop criterion reached
+        if diff_norm < tol:  # Stop criterion reached
             return z_new, k, x_accuracy_list_main, k_x_consensus, k_a_consensus, k_x_conver, k_a_conver  # Return values if converge
 
         z_nodes = z_new
