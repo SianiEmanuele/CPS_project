@@ -49,7 +49,7 @@ def ISTA(x_0, C, tau, lam, y, delta=10**-12, norm_exp=1):
     l_2_norm = 1
     gamma = tau * lam
     num_iterations=0
-    
+
     while (l_2_norm >= delta):
         # Note the inverted sign in the update step compared to the original report
         # Note that A is considered as the identity matrix here
@@ -58,6 +58,7 @@ def ISTA(x_0, C, tau, lam, y, delta=10**-12, norm_exp=1):
         l_2_norm = linalg.norm(x_k_1 - x_k)**norm_exp
         x_k = x_k_1
         num_iterations += 1
+
     #calculating the support of x
     support = np.where(x_k_1 != 0)[0]
     return x_k_1, support, num_iterations
@@ -83,7 +84,7 @@ def sparse_observer(n, q, A, G, tau, lam, y, K):
         z_hat.append(np.hstack((x_hat[k+1], a_hat[k+1])))
     return x_hat, a_hat
 
-def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indices, max_iter=1000, tol=1e-8):
+def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indices, attack_threshold ,max_iter=1000, tol=1e-8):
     """
     Implements the Distributed ISTA (DISTA) algorithm for target localization and attack detection
     """
@@ -133,7 +134,7 @@ def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indice
 
         # ====== PERFORMANCE METRICS ==========
         if not (flag_x_conv and flag_a_conv):
-            x_is_cons, a_is_cons, x_idxs, a_idxs = check_support_consensus(z_new, n,k_elements=2)  # Check if system reached consensus
+            x_is_cons, a_is_cons, x_idxs, a_idxs = check_support_consensus(z_new, n, attack_threshold, n_targets=2)  # Check if system reached consensus
             # --- State ---
             if x_is_cons:
                 if not flag_x_cons:  # consensus
@@ -254,26 +255,39 @@ def Localization_with_attacks(n, q, G, tau, lam, y, lam_1=10, lam_2=20,  delta=1
 
     return w_estimated, w_estimated_supp, iterations
 
-def check_support_consensus(z_nodes, n_state, k_elements=2):
+def check_support_consensus(z_nodes, n_state, attack_threshold, n_targets=2):
     """
-    Checks if all nodes in the network agree on the support (indices of the largest elements)
-    for both the state vector (x) and the attack vector (a).
+    Verifies if all nodes agree on the support for both the state vector (x)
+    and the attack vector (a).
+
+    Parameters:
+    - z_nodes: Matrix (N_nodes x (n_state + n_attacks)) of estimates.
+    - n_states: Number of states
+    - attack_threshold: Threshold below which the estimates on attacks are set to 0.
+    - n_targets: Number of targets.
+
+    Returns:
+    - x_cons (bool): True if all nodes agree on the top-k state indices.
+    - a_cons (bool): True if all nodes agree on the attack indices.
+    - x_ref (array): The support indices for x (from the reference node).
+    - a_ref_indices (array): The support indices for a (from the reference node).
     """
     x_estimates = z_nodes[:, :n_state]
     a_estimates = z_nodes[:, n_state:]
-    # Find indices of the k largest values (magnitude)
-    x_est_idx = np.argsort(np.abs(x_estimates), axis=1)[:, -k_elements:]
-    a_est_idx = np.argsort(np.abs(a_estimates), axis=1)[:, -k_elements:]
 
-    x_est_idx = np.sort(x_est_idx, axis=1)
-    a_est_idx = np.sort(a_est_idx, axis=1)
+    # X Consensus: Check if all nodes agree on the top-k indices
+    x_supports = np.sort(np.argsort(np.abs(x_estimates), axis=1)[:, -n_targets:], axis=1)
+    x_estimated_support = x_supports[0]
+    x_cons = np.all(x_supports == x_estimated_support)
 
-    x_first = x_est_idx[0]
-    a_first = a_est_idx[0]
-    x_cons = np.all(x_est_idx == x_first)
-    a_cons = np.all(a_est_idx == a_first)
+    # A Consensus: Check agreement on threshold mask AND at least one attack is estimated
+    a_mask = np.abs(a_estimates) > attack_threshold
+    a_ref_mask = a_mask[0]
 
-    return x_cons, a_cons, x_first, a_first
+    a_cons = np.all(a_mask == a_ref_mask) and (np.sum(a_ref_mask) > 0)
+    a_estimated_support = np.where(a_ref_mask)[0]
+
+    return x_cons, a_cons, x_estimated_support, a_estimated_support
 
 def check_convergence(x_estimates, a_estimates, true_targets_locations, true_attacked_sensors, n_targets=2, n_attacks=2, n_change_attacks=0):
     """

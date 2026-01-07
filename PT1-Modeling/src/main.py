@@ -232,7 +232,7 @@ def task_3():
     true_attacked_sensors.append([11,15])
     cwd = os.getcwd()
     # original matrices
-    mat = sio.loadmat(cwd + r'/utils/localization.mat')
+    mat = sio.loadmat(cwd + r'/../data/localization.mat')
 
     A = mat['A']
     y = np.squeeze(mat['y'])
@@ -269,7 +269,7 @@ def task_4():
 
     np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
     cwd = os.getcwd()
-    mat = sio.loadmat(cwd + r'/utils/tracking_moving_targets.mat')
+    mat = sio.loadmat(cwd + r'/../data/tracking_moving_targets.mat')
 
     A = mat['A']
     y = mat['Y']
@@ -435,7 +435,7 @@ def task_5():
     np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
     cwd = os.getcwd()
 
-    mat = sio.loadmat(cwd + r'/utils/distributed_localization_data.mat')
+    mat = sio.loadmat(cwd + r'/../data/distributed_localization_data.mat')
     y = np.squeeze(mat['y'])
     D = mat['D']
     n = D.shape[1]
@@ -497,6 +497,7 @@ def task_5():
         z_nodes, stop_criteria_iter, k_x_cons, k_a_cons, k_x_conv, k_a_conv = DISTA(n, q, D, y, Q_curr, tau,
                                                                                                 lam_vec, true_location,
                                                                                                 true_attack_indices,
+                                                                                                attack_threshold,
                                                                                                 max_iter=iterations)
 
         print("\n--- Performance Metrics ---")
