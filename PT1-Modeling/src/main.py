@@ -174,7 +174,7 @@ def task_2():
     lam = 2 * 10**(-3) / tau
 
     # Case with unaware attacks and without noise
-    attack_detection_rate, num_iterations, estimation_accuracy  = ISTA_runs_with_attacks(runs, p, q, C, tau, lam,x_sparsity,a_sparsity, "UNAWARE", noisy=False)
+    attack_detection_rate, num_iterations, estimation_accuracy  = ISTA_runs_with_attacks(runs, p, q, C, tau, lam, x_sparsity, a_sparsity, "UNAWARE", noisy=False)
     
     plt.scatter(range(20,runs), estimation_accuracy, s=1, c='blue', marker='o')
     plt.xlabel("Number of runs")
@@ -186,7 +186,7 @@ def task_2():
     print("Attack detection rate: ", attack_detection_rate)
 
     # Case with unaware attacks and with noise
-    attack_detection_rate, num_iterations, estimation_accuracy  = ISTA_runs_with_attacks(runs, p, q, C, tau, lam,x_sparsity,a_sparsity, "UNAWARE", noisy=True)
+    attack_detection_rate, num_iterations, estimation_accuracy  = ISTA_runs_with_attacks(runs, p, q, C, tau, lam, x_sparsity, a_sparsity, "UNAWARE", noisy=True)
 
     #plot the estimation accuracy in function of the number of runs
     plt.scatter(range(20,runs), estimation_accuracy, s=1, c='blue', marker='o')
@@ -430,41 +430,119 @@ def task_4():
 def task_5():
     print('\n========== TASK 5 ==========')
 
-    print("DISTRIBUTED SYSTEM TASK 5")
-    dist_x_curves, top_names = distributed_localization()
+    ########################### CENTRALIZED ISTA (Just for comparison) #######################
     print("CENTRALIZED SYSTEM TASK 5")
-    cent_x_curve = centralized_localization()
-    colors = ['b', 'g', 'r', 'm'] 
-    cent_color = 'c'
-    
-    # PLOT STATE ACCURACY
-    plt.figure(figsize=(12, 7))
+    np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
+    cwd = os.getcwd()
 
-    # Plot distributed curves
-    for i, acc_curve in enumerate(dist_x_curves):
-        # Add padding to curves
-        current_len = len(acc_curve)
+    mat = sio.loadmat(cwd + r'/utils/distributed_localization_data.mat')
+    y = np.squeeze(mat['y'])
+    D = mat['D']
+    n = D.shape[1]
+    q = D.shape[0]
 
-        plt.plot(acc_curve, label=f"Dist. {top_names[i]}", color=colors[i % len(colors)], linewidth=0.5, alpha=0.7)
-        plt.plot(current_len-1, acc_curve[-1], 'o', color=colors[i % len(colors)], alpha=0.6, markersize=3)
+    G = np.hstack((D, np.eye(q)))
 
-    # Plot centralized curves
-    curr_len_c = len(cent_x_curve)
+    true_location = [13, 24]
+    true_attack_indices = [7, 22]
 
-    plt.plot(cent_x_curve, label="Centralized (Fusion Center)", color=cent_color, linewidth=1)
-    plt.plot(curr_len_c-1, cent_x_curve[-1], 'D', color=cent_color, markersize=3)
-    plt.title('GRAND FINAL: State Accuracy (Distributed vs Centralized)')
-    plt.xlabel('Iterations')
-    plt.ylabel('Error (L2 Norm)') 
-    plt.legend()
-    plt.grid(True, which="both", ls="-", alpha=0.5)
-    plt.tight_layout()
-    plt.show()
+    # Parameters
+    attack_threshold = 0.0015
+    tau = 1 / (np.linalg.norm(G, ord=2) ** 2) - 10 ** (-8)
+    lam_scalar = 1
+
+    z_est, support, stop_iter = Localization_with_attacks(n, q, G, tau, lam_scalar, y, lam_2=0.1, delta=10**-8, norm_exp=2)
+
+    print(f"Centralized localization converged at iteration: {stop_iter}")
+
+    x_est = z_est[:n]
+    a_est = z_est[n:]
+    a_est_refined = np.copy(a_est)
+    a_est_refined[np.abs(a_est_refined) < attack_threshold] = 0
+
+    estimated_targets_location = np.argsort(x_est)[-2:]
+    estimated_attacked_sensors = np.where(a_est_refined != 0)[0]
+
+    print(f"   Estimated Targets: {estimated_targets_location} (True: {true_location})")
+    print(f"   Estimated Attacks: {estimated_attacked_sensors} (True: {true_attack_indices})")
+
+    print('\n --------------------------------------------------- \n')
+    print("DISTRIBUTED SYSTEM TASK 5")
+
+    ############################################## DISTA  ##########################################
+
+    Q12 = mat['Q_12']
+    Q18 = mat['Q_18']
+    Q4 = mat['Q_4']
+    Q8 = mat['Q_8']
+    matrices_list = [Q4, Q8, Q12, Q18]
+    topologies_names = ["TOPOLOGY 1 (Q4)", "TOPOLOGY 2 (Q8)", "TOPOLOGY 3 (Q12)", "TOPOLOGY 4 (Q18)"]
+    tau = 4e-7
+    lam_vec = np.concatenate((np.full(n, 10), np.full(q, 0.1)))
+
+    # Parameters
+    attack_threshold = 0.002 # DISTA needs a bigger threshold
+
+    # --- LOOP OVER ALL TOPOLOGIES ---
+    for i, Q_curr in enumerate(matrices_list):
+        print(f"--- {topologies_names[i]} ---")
+
+        # Eigenvalue analysis
+        evals = np.abs(np.linalg.eigvals(Q_curr))
+        lambda_2 = np.sort(evals)[::-1][1]
+        print(f"   |lambda_2|: {lambda_2:.5f}")
+        iterations = 15000
+
+        # Run DISTA
+        z_nodes, stop_criteria_iter, k_x_cons, k_a_cons, k_x_conv, k_a_conv = DISTA(n, q, D, y, Q_curr, tau,
+                                                                                                lam_vec, true_location,
+                                                                                                true_attack_indices,
+                                                                                                max_iter=iterations)
+
+        print("\n--- Performance Metrics ---")
+        print(f"   X Consensus (k_x_cons)   : {k_x_cons if k_x_cons != -1 else 'Not Reached'}")
+        print(f"   A Consensus (k_a_cons)   : {k_a_cons if k_a_cons != -1 else 'Not Reached'}")
+        print(f"   X Converged (k_x_conv)   : {k_x_conv if k_x_conv != -1 else 'Not Reached'}")
+        print(f"   A Converged (k_a_conv)   : {k_a_conv if k_a_conv != -1 else 'Not Reached'}")
+        # Check if the consensus algorithm reached stop condition
+        if stop_criteria_iter < iterations:
+            print(f"   Reached stop criteria at iteration: {stop_criteria_iter}")
+        else:
+            print(f"   Reached MAX ITERATIONS ({stop_criteria_iter}) without reach stop criteria")
+
+        z_final = np.mean(z_nodes, axis=0)
+        x_est = z_final[:n]
+        a_est = z_final[n:]
+
+        # Refinement of a values
+        a_est_refined = np.copy(a_est)
+        a_est_refined[np.abs(a_est_refined) < attack_threshold] = 0
+
+        # Extract Indices
+        estimated_targets_location = np.argsort(x_est)[-2:]
+        estimated_attacked_sensors = np.where(a_est_refined != 0)[0]
+        est_attack_values = a_est_refined[estimated_attacked_sensors]
+
+        print(f"   Estimated Targets: {estimated_targets_location} (True: {true_location})")
+        print(f"   Estimated Attacks: {estimated_attacked_sensors} (True: {true_attack_indices})")
+        if len(estimated_attacked_sensors) > 0:
+            print("   Estimated Attack Values:")
+            for idx, val in zip(estimated_attacked_sensors, est_attack_values):
+                print(f"      -> Sensor {idx}: {val:.4f}")
+        else:
+            print("      -> No attacks detected.")
+
+        localization_plot(true_location, true_attack_indices, estimated_targets_location, estimated_attacked_sensors,
+                          title=f"{topologies_names[i]}\nStop criteria reached at iter: {stop_criteria_iter}")
+        print('\n --------------------------------------------------- \n')
+
+
+    return
 
 
 if __name__ == "__main__":
-    # task_1()
-    # task_2()
+    task_1()
+    task_2()
     task_3()
-    # task_4()
-    # task_5()
+    task_4()
+    task_5()

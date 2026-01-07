@@ -28,7 +28,7 @@ def IST(x, gamma):
     return np.where(np.abs(x) > gamma, np.sign(x) * (np.abs(x) - gamma), 0)
 
 # ISTA algorithm returns the estimated x and its support
-def ISTA(x_0, C, tau, lam, y):
+def ISTA(x_0, C, tau, lam, y, delta=10**-12, norm_exp=1):
     """
     Implements the Iterative Soft Thresholding Algorithm (ISTA) for solving the L1-regularized least squares problem.
 
@@ -50,12 +50,12 @@ def ISTA(x_0, C, tau, lam, y):
     gamma = tau * lam
     num_iterations=0
     
-    while (l_2_norm >= (10**(-12))):
+    while (l_2_norm >= delta):
         # Note the inverted sign in the update step compared to the original report
         # Note that A is considered as the identity matrix here
         z = x_k + (np.dot(tau, np.dot(C.T, (y - np.dot(C, x_k)))))
         x_k_1 = IST(z, gamma)
-        l_2_norm = linalg.norm(x_k_1 - x_k)
+        l_2_norm = linalg.norm(x_k_1 - x_k)**norm_exp
         x_k = x_k_1
         num_iterations += 1
     #calculating the support of x
@@ -83,41 +83,6 @@ def sparse_observer(n, q, A, G, tau, lam, y, K):
         z_hat.append(np.hstack((x_hat[k+1], a_hat[k+1])))
     return x_hat, a_hat
 
-# ISTA algorithm returns the estimated x and its support
-def ISTA_task_5(x_0, C, tau, lam, y):
-    """
-    Implements the Iterative Soft Thresholding Algorithm (ISTA) for solving the L1-regularized least squares problem.
-
-    Parameters:
-    - x_0: Initial state.
-    - C: Coefficient matrix.
-    - tau: Step size parameter.
-    - lam: Regularization parameter.
-    - y: Measurements vector.
-
-    Returns:
-    - x_k_1: The final estimated x vector.
-    - support: The support of the estimated x vector (indices of non-zero elements).
-    - num_iterations: The number of iterations performed
-    - estimates_history: A list containing the estimated x vector at each iteration step.
-    """
-    x_k = x_0
-    stop_criteria = 1
-    gamma = tau * lam
-    num_iterations=0
-    estimates_history = []
-    
-    while (stop_criteria >= (10**(-8))):
-        z = x_k + (np.dot(tau, np.dot(C.T, (y - np.dot(C, x_k)))))
-        x_k_1 = IST(z, gamma)
-        stop_criteria = np.sum(np.linalg.norm(x_k_1 - x_k,2)**2)
-        estimates_history.append(np.copy(x_k_1))
-        x_k = x_k_1
-        num_iterations += 1
-    #calculating the support of x
-    support = np.where(x_k_1 != 0)[0]
-    return x_k_1, support, num_iterations, estimates_history
-
 def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indices, max_iter=1000, tol=1e-8):
     """
     Implements the Distributed ISTA (DISTA) algorithm for target localization and attack detection
@@ -125,7 +90,6 @@ def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indice
     z_nodes = np.zeros((q, n + q))
     x_true = np.zeros(n)
     for i in true_location_targets: x_true[i] = 1  # Creating the target ground truth matrix for targets
-    x_accuracy_list_main = []
     # Values to determine if sistem reach consensus and converge and when
     k_x_consensus = -1
     flag_x_cons = False
@@ -149,7 +113,6 @@ def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indice
     for k in range(max_iter):
         z_prev = np.copy(z_nodes)
         z_new = np.zeros_like(z_nodes)
-        x_accuracy_list_local = []
         # Consensus Step (Matrix Multiplication for efficiency)
         Qz = np.dot(Q, z_prev)
 
@@ -165,11 +128,6 @@ def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indice
             # Local Soft Thresholding
             z_new[i, :] = IST(z, tau * lam_vec)
 
-            # State accuracy calculation with l2-norm^2
-            x_accuracy = np.linalg.norm(z_new[i, :n] - x_true, 2) ** 2
-            x_accuracy_list_local.append(x_accuracy)
-
-        x_accuracy_list_main.append(np.mean(x_accuracy_list_local))
         # Stop Criterion calculation
         diff_norm = np.sum([np.linalg.norm(z_new[i] - z_prev[i], 2) ** 2 for i in range(q)])
 
@@ -196,14 +154,14 @@ def DISTA(n, q, D, y, Q, tau, lam_vec, true_location_targets, true_attack_indice
                         flag_a_conv = True
 
         if diff_norm < tol:  # Stop criterion reached
-            return z_new, k, x_accuracy_list_main, k_x_consensus, k_a_consensus, k_x_conver, k_a_conver  # Return values if converge
+            return z_new, k, k_x_consensus, k_a_consensus, k_x_conver, k_a_conver  # Return values if converge
 
         z_nodes = z_new
 
         if k > 0 and k % 5000 == 0:
             print(f"      Iter {k}: Diff Norm {diff_norm:.2e}")
 
-    return z_nodes, max_iter, x_accuracy_list_main, k_x_consensus, k_a_consensus, k_x_conver, k_a_conver  # Return values if does not converge
+    return z_nodes, max_iter, k_x_consensus, k_a_consensus, k_x_conver, k_a_conver  # Return values if does not converge
 
 # ==================================================================================================================
 
@@ -288,11 +246,11 @@ def ISTA_runs_with_attacks(runs, n, q, C, tau, lam, x_sparsity, a_sparsity, atta
 
     return attack_detection_rate, num_iterations, estimation_accuracy
 
-def Localization_with_attacks(n, q, G, tau, lam, y):
+def Localization_with_attacks(n, q, G, tau, lam, y, lam_1=10, lam_2=20,  delta=10**-12, norm_exp=1):
     # Estimate x_tilda using ISTA
-    lam_weights = np.concatenate((np.full(n, 10), np.full(q, 20)))
+    lam_weights = np.concatenate((np.full(n, lam_1), np.full(q, lam_2)))
     w = np.zeros(n + q)
-    w_estimated, w_estimated_supp, iterations = ISTA(w, G, tau, lam * lam_weights, y)
+    w_estimated, w_estimated_supp, iterations = ISTA(w, G, tau, lam * lam_weights, y, delta, norm_exp)
 
     return w_estimated, w_estimated_supp, iterations
 
@@ -389,193 +347,6 @@ def check_convergence(x_estimates, a_estimates, true_targets_locations, true_att
     print('-----------------------------------------------\n')
     return x_converged_status, a_converged_status, state_convergence_iteration, attacks_convergence_iteration
 
-def Localization_with_attacks_task_5(n, q, G, tau, lam, y, true_location_targets, true_attack_indices):
-    lam_weights = np.concatenate((np.full(n, 10), np.full(q, 0.1)))
-    final_lam = lam * lam_weights
-    x_true = np.zeros(n)
-    for i in true_location_targets: x_true[i] = 1
-
-    a_true = np.zeros(q)
-    for i in true_attack_indices: a_true[i] = 1
-
-    w = np.zeros(n + q)
-
-    w_estimated, w_estimated_supp, iterations, history = ISTA_task_5(w, G, tau, final_lam, y)
-
-    x_acc_hist = []
-
-    for w_step in history:
-        x_est = w_step[:n]
-        # Calculating accuracy
-        x_acc_hist.append(np.linalg.norm(x_est - x_true, 2)**2)
-
-    return w_estimated, w_estimated_supp, iterations, x_acc_hist
-
-def distributed_localization():
-    """
-    Distributed target localization under sparse sensor attacks using DISTA.
-    """
-    np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
-    cwd = os.getcwd()
-    mat = sio.loadmat(cwd + r'/utils/distributed_localization_data.mat')
-    y = np.squeeze(mat['y'])
-    D = mat['D']
-    Q12 = mat['Q_12']
-    Q18 = mat['Q_18']
-    Q4 = mat['Q_4']
-    Q8 = mat['Q_8']
-    matrices_list = [Q4, Q8, Q12, Q18]
-    topologies_names = ["TOPOLOGY 1 (Q4)", "TOPOLOGY 2 (Q8)", "TOPOLOGY 3 (Q12)", "TOPOLOGY 4 (Q18)"]
-
-    n = D.shape[1]
-    q = D.shape[0]
-    true_location = [13, 24]
-    true_attack_indices = [7, 22]
-
-    # Parameters
-    tau = 4e-7
-    lam_vec = np.concatenate((np.full(n, 10), np.full(q, 0.1)))
-    attack_threshold = 0.002
-
-    # List to store accuracy curves for final comparison
-    x_all_topologies_accuracy = []
-
-    # --- LOOP OVER ALL TOPOLOGIES ---
-    for i, Q_curr in enumerate(matrices_list):
-        print(f"--- {topologies_names[i]} ---")
-
-        # Eigenvalue analysis
-        evals = np.abs(np.linalg.eigvals(Q_curr))
-        lambda_2 = np.sort(evals)[::-1][1]
-        print(f"   |lambda_2|: {lambda_2:.5f}")
-        iterations = 15000
-
-        # Run DISTA
-        z_nodes, stop_criteria_iter, x_accuracy, k_x_cons, k_a_cons, k_x_conv, k_a_conv = DISTA(n, q, D, y, Q_curr, tau,
-                                                                                                lam_vec, true_location,
-                                                                                                true_attack_indices,
-                                                                                                max_iter=iterations)
-
-        print("\n--- Performance Metrics ---")
-        print(f"   X Consensus (k_x_cons)   : {k_x_cons if k_x_cons != -1 else 'Not Reached'}")
-        print(f"   A Consensus (k_a_cons)   : {k_a_cons if k_a_cons != -1 else 'Not Reached'}")
-        print(f"   X Converged (k_x_conv)   : {k_x_conv if k_x_conv != -1 else 'Not Reached'}")
-        print(f"   A Converged (k_a_conv)   : {k_a_conv if k_a_conv != -1 else 'Not Reached'}")
-        # Check if the consensus algorithm reached stop condition
-        if stop_criteria_iter < iterations:
-            print(f"   Reached stop criteria at iteration: {stop_criteria_iter}")
-        else:
-            print(f"   Reached MAX ITERATIONS ({stop_criteria_iter}) without reach stop criteria")
-
-        z_final = np.mean(z_nodes, axis=0)
-        x_est = z_final[:n]
-        a_est = z_final[n:]
-
-        # Refinement of a values
-        a_est_refined = np.copy(a_est)
-        a_est_refined[np.abs(a_est_refined) < attack_threshold] = 0
-
-        # Extract Indices
-        estimated_targets_location = np.argsort(x_est)[-2:]
-        estimated_attacked_sensors = np.where(a_est_refined != 0)[0]
-        est_attack_values = a_est_refined[estimated_attacked_sensors]
-
-        print(f"   Estimated Targets: {estimated_targets_location} (True: {true_location})")
-        print(f"   Estimated Attacks: {estimated_attacked_sensors} (True: {true_attack_indices})")
-        if len(estimated_attacked_sensors) > 0:
-            print("   Estimated Attack Values:")
-            for idx, val in zip(estimated_attacked_sensors, est_attack_values):
-                print(f"      -> Sensor {idx}: {val:.4f}")
-        else:
-            print("      -> No attacks detected.")
-
-        # Process Accuracy for the state global plot
-        x_acc_array = np.array(x_accuracy)
-        # Calculate MEAN error across all nodes for each iteration
-        x_all_topologies_accuracy.append(x_acc_array)
-
-        localization_plot(true_location, true_attack_indices, estimated_targets_location, estimated_attacked_sensors,
-                          title=f"{topologies_names[i]}\nStop criteria reached at iter: {stop_criteria_iter}")
-        print('\n --------------------------------------------------- \n')
-
-    # STATE ACCURACY PLOT
-    colors = ['b', 'g', 'r', 'm']
-    # Determine the maximum number of iterations any topology ran for
-    max_len_x = max(len(curve) for curve in x_all_topologies_accuracy)
-
-    plt.figure(figsize=(10, 6))
-
-    for i, acc_curve in enumerate(x_all_topologies_accuracy):
-        current_len = len(acc_curve)
-        plt.plot(acc_curve, label=topologies_names[i], color=colors[i % len(colors)], linewidth=0.5)
-        plt.plot(current_len - 1, acc_curve[-1], 'o', color=colors[i % len(colors)])
-
-    plt.title('State Accuracy (Distributed)')
-    plt.xlabel('Iterations')
-    plt.ylabel('Mean Error (L2 Norm)')
-    plt.legend()
-    plt.grid(True, which="both", ls="-", alpha=0.5)
-    plt.tight_layout()
-    plt.show()
-
-    return x_all_topologies_accuracy, topologies_names
-
-def centralized_localization():
-    np.set_printoptions(formatter={'all': lambda x: "{:.4g}".format(x)})
-    cwd = os.getcwd()
-
-    mat = sio.loadmat(cwd + r'/utils/distributed_localization_data.mat')
-    y = np.squeeze(mat['y'])
-    D = mat['D']
-    n = D.shape[1]
-    q = D.shape[0]
-
-    G = np.hstack((D, np.eye(q)))
-
-    true_location = [13, 24]
-    true_attack_indices = [7, 22]
-
-    # Parameters
-    attack_threshold = 0.0015
-    tau = 1 / (np.linalg.norm(G, ord=2) ** 2) - 10 ** (-8)
-    lam_scalar = 1
-
-    z_est, support, stop_iter, x_acc_hist = Localization_with_attacks_task_5(n, q, G, tau, lam_scalar, y, true_location,
-                                                                             true_attack_indices)
-
-    print(f"Centralized localization converged at iteration: {stop_iter}")
-
-    x_est = z_est[:n]
-    a_est = z_est[n:]
-    attacks = np.sort(a_est)[-2:]
-    a_est_refined = np.copy(a_est)
-    a_est_refined[np.abs(a_est_refined) < attack_threshold] = 0
-
-    estimated_targets_location = np.argsort(x_est)[-2:]
-    estimated_attacked_sensors = np.where(a_est_refined != 0)[0]
-
-    print(f"   Estimated Targets: {estimated_targets_location} (True: {true_location})")
-    print(f"   Estimated Attacks: {estimated_attacked_sensors} (True: {true_attack_indices})")
-
-    print('\n --------------------------------------------------- \n')
-    print("Generating Plots...")
-
-    # --- PLOTTING ---
-    localization_plot(true_location, true_attack_indices, estimated_targets_location, estimated_attacked_sensors)
-
-    # State Accuracy Plot
-    plt.figure(figsize=(10, 6))
-    plt.plot(x_acc_hist, label='Centralized ISTA', color='b', linewidth=0.5)
-    plt.plot(len(x_acc_hist) - 1, x_acc_hist[-1], 'o', color='b')
-    plt.title('State Accuracy (Centralized)')
-    plt.xlabel('Iterations')
-    plt.ylabel('Error (L2 Norm)')
-    plt.legend()
-    plt.grid(True, which="both", ls="-", alpha=0.5)
-    plt.tight_layout()
-    plt.show()
-
-    return x_acc_hist
 
 # ==================================================================================================================
 
