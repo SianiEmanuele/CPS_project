@@ -289,14 +289,16 @@ def check_support_consensus(z_nodes, n_state, attack_threshold, n_targets=2):
 
     return x_cons, a_cons, x_estimated_support, a_estimated_support
 
-def check_convergence(x_estimates, a_estimates, true_targets_locations, true_attacked_sensors, n_targets=2, n_attacks=2, n_change_attacks=0):
+def check_convergence(x_estimates, a_estimates, true_targets_locations, true_attacked_sensors, n_targets=2, attack_threshold_percentage=0.33, n_change_attacks=0):
     """
-    Evaluates the convergence and stability of state (x) and attack (a) estimates. for task 4 optional
+    Evaluates the convergence and stability of state (x) and attack (a) estimates.
     """
     i = 0
     x_converged_status = False
     a_converged_status = False
     attacks_convergence_iteration = []
+    est_targets_per_iteration = []
+    est_attacks_per_iteration = []
     state_convergence_iteration = 50
     prev_a_est_idx = []
     total_iterations = len(x_estimates)
@@ -306,9 +308,16 @@ def check_convergence(x_estimates, a_estimates, true_targets_locations, true_att
     for x_est, a_est, true_x in zip(x_estimates, a_estimates, true_targets_locations):
         # Calculating indexes
         x_est_idx = np.argsort(np.abs(x_est))[-n_targets:]
-        a_est_idx = np.argsort(np.abs(a_est))[-n_attacks:]
+        if np.max(a_est)!= 0:
+            a_est_scaled = np.abs(a_est) / np.max(np.abs(a_est))
+        else:
+            a_est_scaled = np.abs(a_est)
+        a_est_idx = np.where(a_est_scaled>attack_threshold_percentage)[0]
+
         x_est_idx = np.sort(x_est_idx)
+        est_targets_per_iteration.append(x_est_idx)
         a_est_idx = np.sort(a_est_idx)
+        est_attacks_per_iteration.append(a_est_idx)
         true_targets = np.sort(np.argsort(true_x)[-n_targets:])
 
         # If sensors under attacks change during execution (part 2)
@@ -356,10 +365,17 @@ def check_convergence(x_estimates, a_estimates, true_targets_locations, true_att
         prev_config = current_config_idx if n_change_attacks != 0 else 0 # Calculating current x estimation index from previous
         i = i+1
 
+    # if we have a switch of the attacks and after the switch they are no longer estimated, we push a flag
+    if len(attacks_convergence_iteration) != n_change_attacks+1:
+        attacks_convergence_iteration.append(False)
+
+
     print(f'x_conv: {x_converged_status}, state_convergence_iteration: {state_convergence_iteration}')
     print(f'a_conv: {a_converged_status}, attacks_convergence_iteration: {attacks_convergence_iteration}')
     print('-----------------------------------------------\n')
-    return x_converged_status, a_converged_status, state_convergence_iteration, attacks_convergence_iteration
+
+
+    return x_converged_status, a_converged_status, state_convergence_iteration, attacks_convergence_iteration, est_targets_per_iteration, est_attacks_per_iteration
 
 
 # ==================================================================================================================
@@ -437,7 +453,7 @@ def localization_plot(true_location, true_attacked_sensors, estimated_targets_lo
     plt.show()
 
 
-def tracking_plot(n, true_location, x_hat, a_hat, true_attacked_sensors, n_attacks=2, title=''):
+def tracking_plot(n, true_location, estimated_targets_location , estimated_attacked_sensors, true_attacked_sensors, n_attacks=2, title=''):
     L = 10
     W = 100
     k = 0
@@ -449,39 +465,46 @@ def tracking_plot(n, true_location, x_hat, a_hat, true_attacked_sensors, n_attac
     fig, ax = plt.subplots(figsize=(12, 6))
 
     for i in range(50):
-        true_location.append([x - 1 for x in true_location[i]])
+        if i < len(true_location):
+            true_location.append([x - 1 for x in true_location[i]])
 
-    for x, true_x, a in zip(x_hat, true_location, a_hat):
+    for x_est, true_x, a_est in zip(estimated_targets_location, true_location, estimated_attacked_sensors):
 
-        estimated_targets_location = np.argsort(x)[-3:]
-        estimated_attacked_sensors = np.argsort(np.abs(a))[-n_attacks:]
         ax.clear()
         # Real targets
         ax.plot(room_grid[0, true_x], room_grid[1, true_x], 's', markersize=9,
                 markeredgecolor=np.array([40, 208, 220]) / 255,
-                markerfacecolor=np.array([40, 208, 220]) / 255)
+                markerfacecolor=np.array([40, 208, 220]) / 255,
+                label='True Targets')
         #  Estimated targets
-        ax.plot(room_grid[0, estimated_targets_location], room_grid[1, estimated_targets_location], 'x', markersize=9,
+        ax.plot(room_grid[0, x_est], room_grid[1, x_est], 'x', markersize=9,
                 markeredgecolor=np.array([255, 0, 0]) / 255,
-                markerfacecolor=np.array([255, 255, 255]) / 255)
+                markerfacecolor=np.array([255, 255, 255]) / 255,
+                label='Estimated Targets')
         ax.set_title(f'Iteration: {k}')
 
         # Plot of sensors
         ax.scatter(sensor_coords[:, 0], sensor_coords[:, 1], s=50, c='pink', alpha=0.5, label='Sensors')
 
         # Plot of estimated sensors under attack
-        for attack_number in range(n_attacks):
-            ax.plot(sensor_coords[estimated_attacked_sensors[attack_number], 0],
-                    sensor_coords[estimated_attacked_sensors[attack_number], 1], 'o', markersize=12,
-                    markeredgecolor=np.array([255, 0, 0]) / 255,
-                    markerfacecolor='none')
+        for i, attack_number in enumerate(range(n_attacks)):
+            label = 'Attacked sensors' if i == 0 else None
             ax.plot(sensor_coords[true_attacked_sensors[k][attack_number], 0],
                     sensor_coords[true_attacked_sensors[k][attack_number], 1], '*', markersize=5,
                     markeredgecolor=np.array([40, 208, 220]) / 255,
-                    markerfacecolor=np.array([40, 208, 220]) / 255)
+                    markerfacecolor=np.array([40, 208, 220]) / 255,
+                    label=label)
+        
+        for i, a in enumerate(a_est):
+            label = 'Estimated attacked sensors' if i == 0 else None
+            ax.plot(sensor_coords[a, 0],
+                    sensor_coords[a, 1], 'o', markersize=12,
+                    markeredgecolor=np.array([255, 0, 0]) / 255,
+                    markerfacecolor='none',
+                    label=label)
+
         ax.grid(True)
-        ax.legend(['True Targets', 'Estimated Targets', 'Sensors', 'Estimated attacked sensors', 'Attacked sensors'],
-                  loc='upper left', bbox_to_anchor=(1.02, 1), borderaxespad=0.)
+        ax.legend(loc='upper left', bbox_to_anchor=(1.02, 1), borderaxespad=0.)
         ax.set_xticks(np.arange(100, 1001, 100))
         ax.set_yticks(np.arange(100, 1001, 100))
         ax.set_xlabel('(cm)')
@@ -502,9 +525,11 @@ def plot_convergence_iterations(attacked_sensors, x_results, a_results, attack_t
 
     plt.xlabel('Number of Attacked Sensors')
     plt.ylabel('Convergence Iterations')
+    plt.ylim(0,50)
     plt.title(f'{attack_type} | Convergence vs Number of Attacked Sensors')
     plt.legend()
-    plt.grid(True)
+    plt.grid()
+    plt.xticks(range(1, len(attacked_sensors), 2))  # <-- PIÙ NUMERI SULLA X
     plt.show()
 
 # ==================================================================================================================

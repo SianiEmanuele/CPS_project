@@ -289,6 +289,8 @@ def task_4():
     x_true = np.zeros((K,n))
     true_location.append([21,34,85]) # Changed targets values due to python and matlab mismatch (-1 index)
 
+    attack_threshold_percentage = 0.35 #threshold percentage of the maximum estimated value (for a) after which the sensor is considered attacked
+
     # Set the ground truth state vector
     for loc in true_location:
         x_true[0, loc] = 1
@@ -300,11 +302,12 @@ def task_4():
     # Calculates estimates
     x_hat, a_hat = sparse_observer(n, q, A, G, tau, lam, y, K)
 
-    # Plot results
-    tracking_plot(n, true_location, x_hat, a_hat, true_attacked_sensors=K*attacked_sensors, title='')
-
     # Check convergence
-    check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=2)
+    _, _, _, _, estimated_targets, estimated_attacked_sensors = check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, attack_threshold_percentage=attack_threshold_percentage)
+
+    # Plot results
+    tracking_plot(n, true_location, estimated_targets, estimated_attacked_sensors, true_attacked_sensors=K*attacked_sensors, title='')
+
     plt.show()
 
 
@@ -323,9 +326,9 @@ def task_4():
         y[attacked_sensors[0][1], i] += 0.5 * y[attacked_sensors[0][1], i]
 
     x_hat, a_hat = sparse_observer(n, q, A, G, tau, lam, y, K)
-    check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=2)
+    _, _, _, _, estimated_targets, estimated_attacked_sensors = check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, attack_threshold_percentage=attack_threshold_percentage)
 
-    tracking_plot(n, true_location, x_hat, a_hat, true_attacked_sensors=K * [attacked_sensors[0]],
+    tracking_plot(n, true_location, estimated_targets, estimated_attacked_sensors, true_attacked_sensors=K * [attacked_sensors[0]],
                   title='OPTIONAL TASK PART 1 WITH AWARE ATTACKS')
     plt.show()
 
@@ -356,10 +359,10 @@ def task_4():
     # Calculate estimates
     x_hat, a_hat = sparse_observer(n, q, A, G, tau, lam, y, K)
     # Calculate convergence
-    check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=2, n_change_attacks=len(attacked_sensors))
+    _, _, _, _, estimated_targets, estimated_attacked_sensors = check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, attack_threshold_percentage=attack_threshold_percentage, n_change_attacks=len(attacked_sensors))
 
     # Plot
-    tracking_plot(n, true_location, x_hat, a_hat,
+    tracking_plot(n, true_location, estimated_targets, estimated_attacked_sensors,
                   true_attacked_sensors=int(K / 2) * [attacked_sensors[0]] + int(K / 2) * [attacked_sensors[1]],
                   title='OPTIONAL TASK PART 2')
     plt.show()
@@ -405,13 +408,18 @@ def task_4():
 
             # Calculates estimates
             x_hat, a_hat = sparse_observer(n, q, A, G, tau, lam, y, K)
-            x_converged, a_converged, x_iteration, a_iteration = check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, n_attacks=len(attacked_sensors))
+            (x_converged,
+             a_converged,
+             x_iteration,
+             a_iteration,
+             estimated_targets,
+             estimated_attacked_sensors) = check_convergence(x_hat, a_hat, x_true, attacked_sensors, n_targets=3, attack_threshold_percentage=attack_threshold_percentage)
             
             x_convergence_iterations.append(x_iteration if x_converged else None)
             a_convergence_iterations.append(a_iteration.pop() if a_converged else None)
 
 
-            tracking_plot(n, true_location, x_hat, a_hat, true_attacked_sensors=K *[attacked_sensors],
+            tracking_plot(n, true_location, estimated_targets, estimated_attacked_sensors, true_attacked_sensors=K *[attacked_sensors],
                            n_attacks=len(attacked_sensors), title='OPTIONAL TASK PART 3')
 
             plt.show()
