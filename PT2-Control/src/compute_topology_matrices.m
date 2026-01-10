@@ -49,7 +49,7 @@ end
 
 in_degrees = sum(Ad,2);
 D = diag(in_degrees);
-L = D - Ad
+L = D - Ad;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%% PLOT %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
